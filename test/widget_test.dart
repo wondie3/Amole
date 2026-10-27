@@ -1,30 +1,52 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
+import 'package:amole/app.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:my_first_app/main.dart';
+Future<void> _pumpApp(WidgetTester tester) async {
+  await tester.pumpWidget(const ProviderScope(child: AmoleApp()));
+  await tester.pumpAndSettle();
+}
+
+Finder _navLabel(String label) =>
+    find.descendant(of: find.byType(NavigationBar), matching: find.text(label));
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('starts on Home with branding and four tabs', (tester) async {
+    await _pumpApp(tester);
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(find.text('Amole'), findsOneWidget);
+    expect(find.text('Good food, delivered.'), findsOneWidget);
+    expect(find.text('Home is on its way'), findsOneWidget);
+    expect(find.byType(NavigationDestination), findsNWidgets(4));
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  testWidgets('bottom navigation switches between tabs', (tester) async {
+    await _pumpApp(tester);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    await tester.tap(_navLabel('Search'));
+    await tester.pumpAndSettle();
+    expect(find.text('Search is on its way'), findsOneWidget);
+
+    await tester.tap(_navLabel('Cart'));
+    await tester.pumpAndSettle();
+    expect(find.text('Cart is on its way'), findsOneWidget);
+
+    await tester.tap(_navLabel('Profile'));
+    await tester.pumpAndSettle();
+    expect(find.text('Profile is on its way'), findsOneWidget);
+
+    await tester.tap(_navLabel('Home'));
+    await tester.pumpAndSettle();
+    expect(find.text('Home is on its way'), findsOneWidget);
+  });
+
+  testWidgets('placeholders state their milestone honestly', (tester) async {
+    await _pumpApp(tester);
+
+    expect(
+      find.text('Planned for Milestone 2. Not functional yet.'),
+      findsOneWidget,
+    );
   });
 }
