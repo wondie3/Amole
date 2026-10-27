@@ -8,6 +8,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../data/catalog_providers.dart';
 import '../../data/sample_data.dart';
 import '../../shared/widgets/amole_wordmark.dart';
+import '../../shared/widgets/pressable.dart';
 import 'home_providers.dart';
 import 'home_widgets.dart';
 
@@ -164,8 +165,15 @@ class _HomeContent extends ConsumerWidget {
               itemCount: data.restaurants.length,
               separatorBuilder: (context, i) =>
                   const SizedBox(width: AppSpacing.md),
-              itemBuilder: (context, i) =>
-                  RestaurantCard(restaurant: data.restaurants[i], index: i),
+              itemBuilder: (context, i) => Pressable(
+                onTap: () => context.push(
+                  AppRoutes.restaurantPath(data.restaurants[i].id),
+                ),
+                child: RestaurantCard(
+                  restaurant: data.restaurants[i],
+                  index: i,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
