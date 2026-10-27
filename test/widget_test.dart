@@ -12,13 +12,31 @@ Finder _navLabel(String label) =>
     find.descendant(of: find.byType(NavigationBar), matching: find.text(label));
 
 void main() {
-  testWidgets('starts on Home with branding and four tabs', (tester) async {
+  testWidgets('Home shows branding, sections and sample dishes', (
+    tester,
+  ) async {
     await _pumpApp(tester);
 
     expect(find.text('Amole'), findsOneWidget);
     expect(find.text('Good food, delivered.'), findsOneWidget);
-    expect(find.text('Home is on its way'), findsOneWidget);
+    expect(find.text('Popular dishes'), findsOneWidget);
+    expect(find.text('Featured restaurants'), findsOneWidget);
+    expect(find.text('Tibs'), findsOneWidget);
     expect(find.byType(NavigationDestination), findsNWidgets(4));
+  });
+
+  testWidgets('category filter shows an empty state when nothing matches', (
+    tester,
+  ) async {
+    await _pumpApp(tester);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Breakfast'));
+    await tester.pumpAndSettle();
+    expect(find.text('No dishes in this category yet.'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'All'));
+    await tester.pumpAndSettle();
+    expect(find.text('Tibs'), findsOneWidget);
   });
 
   testWidgets('bottom navigation switches between tabs', (tester) async {
@@ -38,15 +56,6 @@ void main() {
 
     await tester.tap(_navLabel('Home'));
     await tester.pumpAndSettle();
-    expect(find.text('Home is on its way'), findsOneWidget);
-  });
-
-  testWidgets('placeholders state their milestone honestly', (tester) async {
-    await _pumpApp(tester);
-
-    expect(
-      find.text('Planned for Milestone 2. Not functional yet.'),
-      findsOneWidget,
-    );
+    expect(find.text('Popular dishes'), findsOneWidget);
   });
 }
