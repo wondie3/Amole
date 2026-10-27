@@ -11,6 +11,12 @@ Future<void> _pumpApp(WidgetTester tester) async {
 Finder _navLabel(String label) =>
     find.descendant(of: find.byType(NavigationBar), matching: find.text(label));
 
+Future<void> _openSearch(WidgetTester tester) async {
+  await _pumpApp(tester);
+  await tester.tap(_navLabel('Search'));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets('Home shows branding, sections and sample dishes', (
     tester,
@@ -25,9 +31,7 @@ void main() {
     expect(find.byType(NavigationDestination), findsNWidgets(4));
   });
 
-  testWidgets('category filter shows an empty state when nothing matches', (
-    tester,
-  ) async {
+  testWidgets('Home category filter shows an empty state', (tester) async {
     await _pumpApp(tester);
 
     await tester.tap(find.widgetWithText(ChoiceChip, 'Breakfast'));
@@ -44,7 +48,7 @@ void main() {
 
     await tester.tap(_navLabel('Search'));
     await tester.pumpAndSettle();
-    expect(find.text('Search is on its way'), findsOneWidget);
+    expect(find.byType(TextField), findsOneWidget);
 
     await tester.tap(_navLabel('Cart'));
     await tester.pumpAndSettle();
@@ -57,5 +61,51 @@ void main() {
     await tester.tap(_navLabel('Home'));
     await tester.pumpAndSettle();
     expect(find.text('Popular dishes'), findsOneWidget);
+  });
+
+  testWidgets('Search filters dishes, shows empty state and clears', (
+    tester,
+  ) async {
+    await _openSearch(tester);
+    expect(find.text('Doro wat'), findsOneWidget);
+    expect(find.text('Tibs'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'tibs');
+    await tester.pumpAndSettle();
+    expect(find.text('Tibs'), findsOneWidget);
+    expect(find.text('Doro wat'), findsNothing);
+
+    await tester.enterText(find.byType(TextField), 'zzz');
+    await tester.pumpAndSettle();
+    expect(find.text('Nothing matches your search or filter.'), findsOneWidget);
+
+    await tester.tap(find.text('Clear search and filters'));
+    await tester.pumpAndSettle();
+    expect(find.text('Doro wat'), findsOneWidget);
+  });
+
+  testWidgets('Search restaurants opens a restaurant menu', (tester) async {
+    await _openSearch(tester);
+
+    await tester.tap(find.text('Restaurants'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Meskel Kitchen'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Menu'), findsOneWidget);
+    expect(find.text('Doro wat'), findsOneWidget);
+  });
+
+  testWidgets('A restaurant without dishes says the menu is coming', (
+    tester,
+  ) async {
+    await _openSearch(tester);
+
+    await tester.tap(find.text('Restaurants'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Gursha Corner'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Menu coming soon'), findsOneWidget);
   });
 }

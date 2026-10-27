@@ -5,6 +5,7 @@ import '../../features/cart/cart_screen.dart';
 import '../../features/credits/credits_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/profile/profile_screen.dart';
+import '../../features/restaurants/restaurant_screen.dart';
 import '../../features/search/search_screen.dart';
 import '../../features/shell/app_shell.dart';
 
@@ -14,6 +15,10 @@ abstract final class AppRoutes {
   static const String cart = '/cart';
   static const String profile = '/profile';
   static const String credits = '/credits';
+  static const String restaurantPattern = '/restaurants/:id';
+
+  static String restaurantPath(String id) =>
+      '/restaurants/${Uri.encodeComponent(id)}';
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -61,6 +66,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.credits,
         builder: (context, state) => const CreditsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.restaurantPattern,
+        builder: (context, state) =>
+            RestaurantScreen(restaurantId: state.pathParameters['id'] ?? ''),
       ),
     ],
   );
