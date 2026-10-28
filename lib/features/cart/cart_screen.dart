@@ -158,9 +158,9 @@ class _CartBody extends ConsumerWidget {
           style: textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
         ),
         const SizedBox(height: AppSpacing.lg),
-        const FilledButton(
-          onPressed: null,
-          child: Text('Checkout arrives in Milestone 6'),
+        FilledButton(
+          onPressed: () => context.push(AppRoutes.checkout),
+          child: Text('Checkout · ${formatEtb(totals.totalSantim)}'),
         ),
       ],
     );
