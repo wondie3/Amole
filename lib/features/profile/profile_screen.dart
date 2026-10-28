@@ -7,11 +7,14 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../data/catalog_providers.dart';
 import '../../shared/widgets/catalog_rows.dart';
+import '../../shared/widgets/nav_tile.dart';
 import '../../shared/widgets/state_views.dart';
+import '../addresses/addresses_provider.dart';
 import '../favorites/favorites_provider.dart';
+import '../orders/orders_provider.dart';
 
-/// Temporary Profile: shows saved favorites. Account features arrive in
-/// Milestone 7.
+/// Profile hub. There are no accounts yet; everything here is local to this
+/// phone.
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
@@ -19,6 +22,8 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final catalog = ref.watch(homeDataProvider);
     final favoriteIds = ref.watch(favoritesProvider);
+    final orderCount = ref.watch(ordersProvider).length;
+    final addressCount = ref.watch(addressesProvider).addresses.length;
     final textTheme = Theme.of(context).textTheme;
     final secondary = textTheme.bodyMedium?.copyWith(
       color: AppColors.textSecondary,
@@ -27,7 +32,7 @@ class ProfileScreen extends ConsumerWidget {
       child: catalog.when(
         loading: () => const CenteredLoading(),
         error: (error, stack) => ErrorRetryView(
-          message: 'Could not load your favorites. Please try again.',
+          message: 'Could not load your profile. Please try again.',
           onRetry: () => ref.invalidate(homeDataProvider),
         ),
         data: (d) {
@@ -41,9 +46,38 @@ class ProfileScreen extends ConsumerWidget {
               Text('Profile', style: textTheme.headlineSmall),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Sign-in, addresses and order history arrive in Milestone 7. '
-                'Nothing is linked to an account yet.',
+                'Sign-in is not available yet. Accounts need a secure '
+                'backend, so Amole does not collect passwords or pretend to '
+                'sign you in. Nothing is linked to an account.',
                 style: secondary,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              NavTile(
+                icon: Icons.receipt_long_outlined,
+                title: 'Order history',
+                subtitle: orderCount == 0
+                    ? 'No demo orders yet'
+                    : '$orderCount demo '
+                          '${orderCount == 1 ? 'order' : 'orders'} saved '
+                          'on this phone',
+                onTap: () => context.push(AppRoutes.orders),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              NavTile(
+                icon: Icons.location_on_outlined,
+                title: 'Saved addresses',
+                subtitle: addressCount == 0
+                    ? 'No saved addresses'
+                    : '$addressCount saved '
+                          '${addressCount == 1 ? 'address' : 'addresses'}',
+                onTap: () => context.push(AppRoutes.addresses),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              NavTile(
+                icon: Icons.settings_outlined,
+                title: 'Settings',
+                subtitle: 'About, photo credits, clear local data',
+                onTap: () => context.push(AppRoutes.settings),
               ),
               const SizedBox(height: AppSpacing.xl),
               Text(

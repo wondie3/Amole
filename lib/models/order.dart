@@ -41,6 +41,40 @@ class OrderItem {
   final String? spiceLabel;
 
   int get lineTotalSantim => unitPriceSantim * quantity;
+
+  Map<String, Object?> toJson() => {
+    'dishId': dishId,
+    'name': name,
+    'unitPriceSantim': unitPriceSantim,
+    'quantity': quantity,
+    'spice': spiceLabel,
+  };
+
+  /// Returns null if [json] is not a valid saved item.
+  static OrderItem? tryFromJson(Object? json) {
+    if (json is! Map) return null;
+    final dishId = json['dishId'];
+    final name = json['name'];
+    final price = json['unitPriceSantim'];
+    final quantity = json['quantity'];
+    final spice = json['spice'];
+    if (dishId is! String ||
+        name is! String ||
+        price is! int ||
+        price < 0 ||
+        quantity is! int ||
+        quantity < 1) {
+      return null;
+    }
+    if (spice != null && spice is! String) return null;
+    return OrderItem(
+      dishId: dishId,
+      name: name,
+      unitPriceSantim: price,
+      quantity: quantity,
+      spiceLabel: spice as String?,
+    );
+  }
 }
 
 class DeliveryDetails {
@@ -88,4 +122,78 @@ class Order {
 
   int get subtotalSantim => items.fold(0, (sum, i) => sum + i.lineTotalSantim);
   int get totalSantim => subtotalSantim + deliveryFeeSantim;
+  int get itemCount => items.fold(0, (sum, i) => sum + i.quantity);
+
+  /// Saved form. Personal contact details (name, phone, street, landmark) are
+  /// deliberately NOT saved; only the sub-city is kept.
+  Map<String, Object?> toStorageJson() => {
+    'id': id,
+    'createdAt': createdAt.toUtc().toIso8601String(),
+    'restaurantId': restaurantId,
+    'restaurantName': restaurantName,
+    'items': [for (final i in items) i.toJson()],
+    'deliveryFeeSantim': deliveryFeeSantim,
+    'subCity': delivery.subCity,
+    'payment': payment.name,
+    'status': status.name,
+    'simulated': simulated,
+  };
+
+  /// Returns null if [json] is not a valid saved order.
+  static Order? tryFromStorageJson(Object? json) {
+    if (json is! Map) return null;
+    final id = json['id'];
+    final createdRaw = json['createdAt'];
+    final restaurantId = json['restaurantId'];
+    final restaurantName = json['restaurantName'];
+    final fee = json['deliveryFeeSantim'];
+    final rawItems = json['items'];
+    if (id is! String ||
+        id.isEmpty ||
+        createdRaw is! String ||
+        restaurantId is! String ||
+        restaurantName is! String ||
+        fee is! int ||
+        fee < 0 ||
+        rawItems is! List ||
+        rawItems.isEmpty) {
+      return null;
+    }
+    final createdAt = DateTime.tryParse(createdRaw);
+    if (createdAt == null) return null;
+
+    final items = <OrderItem>[];
+    for (final raw in rawItems) {
+      final item = OrderItem.tryFromJson(raw);
+      if (item == null) return null;
+      items.add(item);
+    }
+
+    final payment = PaymentMethod.values
+        .where((v) => v.name == json['payment'])
+        .firstOrNull;
+    final status = OrderStatus.values
+        .where((v) => v.name == json['status'])
+        .firstOrNull;
+    if (payment == null || status == null) return null;
+
+    final subCity = json['subCity'];
+    return Order(
+      id: id,
+      createdAt: createdAt,
+      restaurantId: restaurantId,
+      restaurantName: restaurantName,
+      items: items,
+      deliveryFeeSantim: fee,
+      delivery: DeliveryDetails(
+        name: '',
+        phone: '',
+        subCity: subCity is String ? subCity : '',
+        address: '',
+      ),
+      payment: payment,
+      status: status,
+      simulated: json['simulated'] is bool ? json['simulated'] as bool : true,
+    );
+  }
 }

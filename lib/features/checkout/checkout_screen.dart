@@ -13,6 +13,7 @@ import '../../shared/widgets/state_views.dart';
 import '../cart/cart_logic.dart';
 import '../cart/cart_provider.dart';
 import '../orders/orders_provider.dart';
+import '../addresses/addresses_provider.dart';
 import 'checkout_logic.dart';
 
 OutlineInputBorder _border(Color color) => OutlineInputBorder(
@@ -48,6 +49,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   String? _subCity;
   PaymentMethod _payment = PaymentMethod.cashOnDelivery;
   bool _submitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final saved = ref.read(addressesProvider).selected;
+    if (saved != null) {
+      _name.text = saved.name;
+      _phone.text = saved.phone;
+      _address.text = saved.address;
+      _landmark.text = saved.landmark ?? '';
+      _subCity = saved.subCity;
+    }
+  }
 
   @override
   void dispose() {
@@ -166,7 +180,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   ),
                   child: Text(
                     'Demo checkout. No real order is placed and no payment is '
-                    'taken. Your details are not saved.',
+                    'taken. Details are saved only if you add them under Saved addresses.',
                     style: textTheme.bodyMedium,
                   ),
                 ),
