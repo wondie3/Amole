@@ -51,9 +51,13 @@ Future<void> _pump(WidgetTester tester, Map<String, Object> initial) async {
 Finder _navLabel(String label) =>
     find.descendant(of: find.byType(NavigationBar), matching: find.text(label));
 
-Future<void> _openHistory(WidgetTester tester) async {
+Future<void> _openProfile(WidgetTester tester) async {
   await tester.tap(_navLabel('Profile'));
   await tester.pumpAndSettle();
+}
+
+Future<void> _openHistory(WidgetTester tester) async {
+  await _openProfile(tester);
   await tester.tap(find.text('Order history'));
   await tester.pumpAndSettle();
 }
@@ -61,9 +65,11 @@ Future<void> _openHistory(WidgetTester tester) async {
 void main() {
   testWidgets('Empty history shows a clear empty state', (tester) async {
     await _pump(tester, {});
+    await _openProfile(tester);
     expect(find.text('No demo orders yet'), findsOneWidget);
 
-    await _openHistory(tester);
+    await tester.tap(find.text('Order history'));
+    await tester.pumpAndSettle();
     expect(find.text('No orders yet'), findsOneWidget);
     expect(find.text('Clear history'), findsNothing);
   });
@@ -74,9 +80,11 @@ void main() {
     await _pump(tester, {
       OrdersNotifier.storageKey: encodeOrders([_saved]),
     });
+    await _openProfile(tester);
     expect(find.text('1 demo order saved on this phone'), findsOneWidget);
 
-    await _openHistory(tester);
+    await tester.tap(find.text('Order history'));
+    await tester.pumpAndSettle();
     expect(find.text('Sheger Grill'), findsOneWidget);
     expect(find.textContaining('2 items'), findsOneWidget);
     expect(find.textContaining('ETB 685'), findsOneWidget);
