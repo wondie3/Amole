@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/cart/cart_screen.dart';
+import '../../features/checkout/checkout_screen.dart';
+import '../../features/checkout/order_confirmation_screen.dart';
 import '../../features/credits/credits_screen.dart';
 import '../../features/dish/dish_detail_screen.dart';
 import '../../features/home/home_screen.dart';
@@ -16,13 +18,18 @@ abstract final class AppRoutes {
   static const String cart = '/cart';
   static const String profile = '/profile';
   static const String credits = '/credits';
+  static const String checkout = '/checkout';
   static const String restaurantPattern = '/restaurants/:id';
   static const String dishPattern = '/dishes/:id';
+  static const String orderConfirmationPattern = '/orders/:id/confirmation';
 
   static String restaurantPath(String id) =>
       '/restaurants/${Uri.encodeComponent(id)}';
 
   static String dishPath(String id) => '/dishes/${Uri.encodeComponent(id)}';
+
+  static String orderConfirmationPath(String id) =>
+      '/orders/${Uri.encodeComponent(id)}/confirmation';
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -80,6 +87,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.dishPattern,
         builder: (context, state) =>
             DishDetailScreen(dishId: state.pathParameters['id'] ?? ''),
+      ),
+      GoRoute(
+        path: AppRoutes.checkout,
+        builder: (context, state) => const CheckoutScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.orderConfirmationPattern,
+        builder: (context, state) =>
+            OrderConfirmationScreen(orderId: state.pathParameters['id'] ?? ''),
       ),
     ],
   );
