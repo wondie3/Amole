@@ -64,7 +64,7 @@ abstract final class SampleData {
     ),
   ];
 
-  // Labels are deliberately conservative until each photo is confirmed.
+  // Descriptions are general and should be reviewed against local serving.
   static const List<Dish> dishes = [
     Dish(
       id: 'wat_platter',
@@ -74,6 +74,10 @@ abstract final class SampleData {
       priceSantim: 25000,
       rating: 4.6,
       imageAsset: 'assets/images/foods/doro_wat.jpg',
+      description:
+          'Slow-simmered chicken in a rich, spicy berbere sauce, traditionally '
+          'served with a boiled egg on injera.',
+      hasSpiceOptions: true,
     ),
     Dish(
       id: 'fasting_platter',
@@ -83,6 +87,9 @@ abstract final class SampleData {
       priceSantim: 19000,
       rating: 4.7,
       imageAsset: 'assets/images/foods/shiro.jpg',
+      description:
+          'A smooth, savory stew of ground chickpeas with onion, garlic and '
+          'spices, served with injera. A staple on fasting days.',
     ),
     Dish(
       id: 'tibs',
@@ -92,6 +99,35 @@ abstract final class SampleData {
       priceSantim: 32000,
       rating: 4.4,
       imageAsset: 'assets/images/foods/tibs.jpg',
+      description:
+          'Sauteed cubes of meat with onion, pepper and spices, served with '
+          'injera.',
+      hasSpiceOptions: true,
+    ),
+    Dish(
+      id: 'kitfo',
+      name: 'Kitfo',
+      restaurantId: 'sheger_grill',
+      categoryId: 'grill',
+      priceSantim: 36000,
+      rating: 4.5,
+      imageAsset: 'assets/images/foods/kitfo.jpg',
+      description:
+          'Finely minced beef seasoned with spiced clarified butter and '
+          'mitmita, served with ayib (fresh cheese) and injera.',
+    ),
+    Dish(
+      id: 'firfir',
+      name: 'Firfir',
+      restaurantId: 'buna_bet_bistro',
+      categoryId: 'breakfast',
+      priceSantim: 14000,
+      rating: 4.2,
+      imageAsset: 'assets/images/foods/firfir.jpg',
+      description:
+          'Shredded injera tossed in a spiced berbere sauce, a popular '
+          'breakfast dish.',
+      hasSpiceOptions: true,
     ),
   ];
 
@@ -121,6 +157,23 @@ abstract final class SampleData {
       license: 'CC BY-SA 4.0',
       licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
       sourceUrl: 'https://commons.wikimedia.org/wiki/File:Tibs_1.jpg',
+    ),
+    PhotoCredit(
+      asset: 'assets/images/foods/kitfo.jpg',
+      subject: 'Kitfo',
+      author: 'Lelaw Wendimu',
+      license: 'CC BY-SA 4.0',
+      licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+      sourceUrl:
+          'https://commons.wikimedia.org/wiki/File:Kitfo,_Ayib_and_Injera.jpg',
+    ),
+    PhotoCredit(
+      asset: 'assets/images/foods/firfir.jpg',
+      subject: 'Firfir',
+      author: 'Temesgen Woldezion (edited by Merhawie Woldezion)',
+      license: 'CC BY-SA 2.5',
+      licenseUrl: 'https://creativecommons.org/licenses/by-sa/2.5/',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Taita_fit-fit.jpg',
     ),
     PhotoCredit(
       asset: 'assets/images/promo/shared_table.jpg',

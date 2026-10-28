@@ -7,6 +7,8 @@ class Dish {
     required this.priceSantim,
     required this.rating,
     required this.imageAsset,
+    this.description = '',
+    this.hasSpiceOptions = false,
   });
 
   final String id;
@@ -20,4 +22,6 @@ class Dish {
   /// Sample rating, not real customer data.
   final double rating;
   final String imageAsset;
+  final String description;
+  final bool hasSpiceOptions;
 }
