@@ -9,9 +9,9 @@ import '../../data/catalog_providers.dart';
 import '../../shared/widgets/catalog_rows.dart';
 import '../../shared/widgets/state_views.dart';
 import '../favorites/favorites_provider.dart';
+import '../orders/orders_provider.dart';
 
-/// Temporary Profile: shows saved favorites. Account features arrive in
-/// Milestone 7.
+/// Profile hub. Account features (sign-in, addresses) are not built yet.
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
@@ -19,6 +19,7 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final catalog = ref.watch(homeDataProvider);
     final favoriteIds = ref.watch(favoritesProvider);
+    final orderCount = ref.watch(ordersProvider).length;
     final textTheme = Theme.of(context).textTheme;
     final secondary = textTheme.bodyMedium?.copyWith(
       color: AppColors.textSecondary,
@@ -27,7 +28,7 @@ class ProfileScreen extends ConsumerWidget {
       child: catalog.when(
         loading: () => const CenteredLoading(),
         error: (error, stack) => ErrorRetryView(
-          message: 'Could not load your favorites. Please try again.',
+          message: 'Could not load your profile. Please try again.',
           onRetry: () => ref.invalidate(homeDataProvider),
         ),
         data: (d) {
@@ -41,9 +42,32 @@ class ProfileScreen extends ConsumerWidget {
               Text('Profile', style: textTheme.headlineSmall),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Sign-in, addresses and order history arrive in Milestone 7. '
-                'Nothing is linked to an account yet.',
+                'Sign-in is not available yet. Accounts need a secure '
+                'backend, so Amole does not collect passwords or pretend to '
+                'sign you in. Nothing is linked to an account.',
                 style: secondary,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Material(
+                color: AppColors.surface,
+                clipBehavior: Clip.antiAlias,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadii.md),
+                  side: const BorderSide(color: AppColors.outline),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.receipt_long_outlined),
+                  title: const Text('Order history'),
+                  subtitle: Text(
+                    orderCount == 0
+                        ? 'No demo orders yet'
+                        : '$orderCount demo '
+                              '${orderCount == 1 ? 'order' : 'orders'} saved '
+                              'on this phone',
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push(AppRoutes.orders),
+                ),
               ),
               const SizedBox(height: AppSpacing.xl),
               Text(

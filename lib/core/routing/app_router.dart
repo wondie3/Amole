@@ -7,6 +7,8 @@ import '../../features/checkout/order_confirmation_screen.dart';
 import '../../features/credits/credits_screen.dart';
 import '../../features/dish/dish_detail_screen.dart';
 import '../../features/home/home_screen.dart';
+import '../../features/orders/order_detail_screen.dart';
+import '../../features/orders/order_history_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/restaurants/restaurant_screen.dart';
 import '../../features/search/search_screen.dart';
@@ -19,14 +21,19 @@ abstract final class AppRoutes {
   static const String profile = '/profile';
   static const String credits = '/credits';
   static const String checkout = '/checkout';
+  static const String orders = '/orders';
   static const String restaurantPattern = '/restaurants/:id';
   static const String dishPattern = '/dishes/:id';
+  static const String orderDetailPattern = '/orders/:id';
   static const String orderConfirmationPattern = '/orders/:id/confirmation';
 
   static String restaurantPath(String id) =>
       '/restaurants/${Uri.encodeComponent(id)}';
 
   static String dishPath(String id) => '/dishes/${Uri.encodeComponent(id)}';
+
+  static String orderDetailPath(String id) =>
+      '/orders/${Uri.encodeComponent(id)}';
 
   static String orderConfirmationPath(String id) =>
       '/orders/${Uri.encodeComponent(id)}/confirmation';
@@ -91,6 +98,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.checkout,
         builder: (context, state) => const CheckoutScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.orders,
+        builder: (context, state) => const OrderHistoryScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.orderDetailPattern,
+        builder: (context, state) =>
+            OrderDetailScreen(orderId: state.pathParameters['id'] ?? ''),
       ),
       GoRoute(
         path: AppRoutes.orderConfirmationPattern,
