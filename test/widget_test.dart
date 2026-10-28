@@ -12,6 +12,10 @@ Finder _navLabel(String label) =>
     find.descendant(of: find.byType(NavigationBar), matching: find.text(label));
 
 Future<void> _openSearch(WidgetTester tester) async {
+  // Tall test screen so every lazily built list row is on screen.
+  tester.view.physicalSize = const Size(800, 2000);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.reset);
   await _pumpApp(tester);
   await tester.tap(_navLabel('Search'));
   await tester.pumpAndSettle();
