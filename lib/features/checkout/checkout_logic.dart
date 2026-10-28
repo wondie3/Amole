@@ -126,6 +126,8 @@ OrderBuild buildOrder({
       restaurantId: restaurant.id,
       restaurantName: restaurant.name,
       items: items,
+      etaMinMinutes: restaurant.etaMinMinutes,
+      etaMaxMinutes: restaurant.etaMaxMinutes,
       deliveryFeeSantim: restaurant.deliveryFeeSantim,
       delivery: delivery,
       payment: payment,

@@ -1,4 +1,5 @@
-/// Lifecycle of an order. Only [placed] is used until Milestone 8.
+/// Lifecycle of an order. Statuses only change through simulation until a
+/// backend exists.
 enum OrderStatus {
   placed('Placed'),
   confirmed('Confirmed'),
@@ -105,6 +106,8 @@ class Order {
     required this.payment,
     this.status = OrderStatus.placed,
     this.simulated = true,
+    this.etaMinMinutes,
+    this.etaMaxMinutes,
   });
 
   final String id;
@@ -120,9 +123,29 @@ class Order {
   /// True until a real backend creates and validates orders.
   final bool simulated;
 
+  /// The restaurant's sample delivery estimate, copied at ordering time.
+  /// Null for orders saved before this was recorded.
+  final int? etaMinMinutes;
+  final int? etaMaxMinutes;
+
   int get subtotalSantim => items.fold(0, (sum, i) => sum + i.lineTotalSantim);
   int get totalSantim => subtotalSantim + deliveryFeeSantim;
   int get itemCount => items.fold(0, (sum, i) => sum + i.quantity);
+
+  Order copyWith({OrderStatus? status}) => Order(
+    id: id,
+    createdAt: createdAt,
+    restaurantId: restaurantId,
+    restaurantName: restaurantName,
+    items: items,
+    deliveryFeeSantim: deliveryFeeSantim,
+    delivery: delivery,
+    payment: payment,
+    status: status ?? this.status,
+    simulated: simulated,
+    etaMinMinutes: etaMinMinutes,
+    etaMaxMinutes: etaMaxMinutes,
+  );
 
   /// Saved form. Personal contact details (name, phone, street, landmark) are
   /// deliberately NOT saved; only the sub-city is kept.
@@ -137,6 +160,8 @@ class Order {
     'payment': payment.name,
     'status': status.name,
     'simulated': simulated,
+    'etaMin': etaMinMinutes,
+    'etaMax': etaMaxMinutes,
   };
 
   /// Returns null if [json] is not a valid saved order.
@@ -177,6 +202,12 @@ class Order {
         .firstOrNull;
     if (payment == null || status == null) return null;
 
+    // The estimate is optional: older saved orders do not have it.
+    final etaMin = json['etaMin'];
+    final etaMax = json['etaMax'];
+    final validEta =
+        etaMin is int && etaMax is int && etaMin >= 0 && etaMax >= etaMin;
+
     final subCity = json['subCity'];
     return Order(
       id: id,
@@ -194,6 +225,8 @@ class Order {
       payment: payment,
       status: status,
       simulated: json['simulated'] is bool ? json['simulated'] as bool : true,
+      etaMinMinutes: validEta ? etaMin : null,
+      etaMaxMinutes: validEta ? etaMax : null,
     );
   }
 }
