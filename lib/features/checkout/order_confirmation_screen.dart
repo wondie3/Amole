@@ -120,11 +120,16 @@ class _Body extends StatelessWidget {
         _Row(label: 'Total', value: formatEtb(order.totalSantim), bold: true),
         const SizedBox(height: AppSpacing.lg),
         Text(
-          'Order tracking arrives in Milestone 8.',
+          'Tracking is simulated. Open the order to step through its status.',
           textAlign: TextAlign.center,
           style: secondary,
         ),
         const SizedBox(height: AppSpacing.lg),
+        OutlinedButton(
+          onPressed: () => context.push(AppRoutes.orderDetailPath(order.id)),
+          child: const Text('Track this order (simulated)'),
+        ),
+        const SizedBox(height: AppSpacing.sm),
         FilledButton(
           onPressed: () => context.go(AppRoutes.home),
           child: const Text('Back to Home'),

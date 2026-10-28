@@ -6,6 +6,7 @@ import '../../data/preferences_provider.dart';
 import '../../models/order.dart';
 import '../cart/cart_provider.dart';
 import '../checkout/checkout_logic.dart';
+import 'order_status_logic.dart';
 import 'orders_logic.dart';
 
 /// Simulated orders, newest first, saved on this phone only. Real orders will
@@ -56,6 +57,25 @@ class OrdersNotifier extends Notifier<List<Order>> {
       ref.read(cartProvider.notifier).clear();
     }
     return result;
+  }
+
+  /// Simulated: moves an order one step forward. Returns false if the order
+  /// is unknown or cannot move.
+  bool advance(String id) => _apply(id, advanceOrder);
+
+  /// Cancels an order if its status allows it. Returns false otherwise.
+  bool cancel(String id) => _apply(id, cancelOrder);
+
+  bool _apply(String id, Order? Function(Order) change) {
+    final i = state.indexWhere((o) => o.id == id);
+    if (i < 0) return false;
+    final updated = change(state[i]);
+    if (updated == null) return false;
+    state = [
+      for (var j = 0; j < state.length; j++) j == i ? updated : state[j],
+    ];
+    _save(state);
+    return true;
   }
 
   void clearHistory() {
