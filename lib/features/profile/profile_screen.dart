@@ -7,11 +7,14 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../data/catalog_providers.dart';
 import '../../shared/widgets/catalog_rows.dart';
+import '../../shared/widgets/nav_tile.dart';
 import '../../shared/widgets/state_views.dart';
+import '../addresses/addresses_provider.dart';
 import '../favorites/favorites_provider.dart';
 import '../orders/orders_provider.dart';
 
-/// Profile hub. Account features (sign-in, addresses) are not built yet.
+/// Profile hub. There are no accounts yet; everything here is local to this
+/// phone.
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
@@ -20,6 +23,7 @@ class ProfileScreen extends ConsumerWidget {
     final catalog = ref.watch(homeDataProvider);
     final favoriteIds = ref.watch(favoritesProvider);
     final orderCount = ref.watch(ordersProvider).length;
+    final addressCount = ref.watch(addressesProvider).addresses.length;
     final textTheme = Theme.of(context).textTheme;
     final secondary = textTheme.bodyMedium?.copyWith(
       color: AppColors.textSecondary,
@@ -48,26 +52,32 @@ class ProfileScreen extends ConsumerWidget {
                 style: secondary,
               ),
               const SizedBox(height: AppSpacing.lg),
-              Material(
-                color: AppColors.surface,
-                clipBehavior: Clip.antiAlias,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadii.md),
-                  side: const BorderSide(color: AppColors.outline),
-                ),
-                child: ListTile(
-                  leading: const Icon(Icons.receipt_long_outlined),
-                  title: const Text('Order history'),
-                  subtitle: Text(
-                    orderCount == 0
-                        ? 'No demo orders yet'
-                        : '$orderCount demo '
-                              '${orderCount == 1 ? 'order' : 'orders'} saved '
-                              'on this phone',
-                  ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => context.push(AppRoutes.orders),
-                ),
+              NavTile(
+                icon: Icons.receipt_long_outlined,
+                title: 'Order history',
+                subtitle: orderCount == 0
+                    ? 'No demo orders yet'
+                    : '$orderCount demo '
+                          '${orderCount == 1 ? 'order' : 'orders'} saved '
+                          'on this phone',
+                onTap: () => context.push(AppRoutes.orders),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              NavTile(
+                icon: Icons.location_on_outlined,
+                title: 'Saved addresses',
+                subtitle: addressCount == 0
+                    ? 'No saved addresses'
+                    : '$addressCount saved '
+                          '${addressCount == 1 ? 'address' : 'addresses'}',
+                onTap: () => context.push(AppRoutes.addresses),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              NavTile(
+                icon: Icons.settings_outlined,
+                title: 'Settings',
+                subtitle: 'About, photo credits, clear local data',
+                onTap: () => context.push(AppRoutes.settings),
               ),
               const SizedBox(height: AppSpacing.xl),
               Text(

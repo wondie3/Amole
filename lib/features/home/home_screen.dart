@@ -9,6 +9,8 @@ import '../../data/catalog_providers.dart';
 import '../../data/sample_data.dart';
 import '../../shared/widgets/amole_wordmark.dart';
 import '../../shared/widgets/pressable.dart';
+import '../addresses/address_picker.dart';
+import '../addresses/addresses_provider.dart';
 import 'home_providers.dart';
 import 'home_widgets.dart';
 
@@ -53,6 +55,7 @@ class _HomeContent extends ConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
     final scale = MediaQuery.textScalerOf(context);
     final selected = ref.watch(selectedCategoryProvider);
+    final address = ref.watch(addressesProvider).selected;
     final restaurantNames = {for (final r in data.restaurants) r.id: r.name};
     final dishes = selected == 'all'
         ? data.dishes
@@ -71,14 +74,10 @@ class _HomeContent extends ConsumerWidget {
           const AmoleWordmark(fontSize: 30),
           const SizedBox(height: AppSpacing.md),
           _LocationPill(
-            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Choosing a delivery location arrives with addresses '
-                  '(Milestone 7).',
-                ),
-              ),
-            ),
+            label: address == null
+                ? 'Add a delivery address'
+                : '${address.label} · ${address.subCity}',
+            onTap: () => showAddressPicker(context),
           ),
           const SizedBox(height: AppSpacing.lg),
           Text('Selam! What are you craving?', style: textTheme.headlineSmall),
@@ -195,8 +194,9 @@ class _HomeContent extends ConsumerWidget {
 }
 
 class _LocationPill extends StatelessWidget {
-  const _LocationPill({required this.onTap});
+  const _LocationPill({required this.label, required this.onTap});
 
+  final String label;
   final VoidCallback onTap;
 
   @override
@@ -211,21 +211,25 @@ class _LocationPill extends StatelessWidget {
           onTap: onTap,
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 48),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.location_on, color: AppColors.orange, size: 20),
-                  SizedBox(width: AppSpacing.xs),
+                  const Icon(
+                    Icons.location_on,
+                    color: AppColors.orange,
+                    size: 20,
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
                   Flexible(
                     child: Text(
-                      'Bole, Addis Ababa (sample)',
+                      label,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  Icon(Icons.expand_more, size: 20),
+                  const Icon(Icons.expand_more, size: 20),
                 ],
               ),
             ),
