@@ -79,8 +79,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             child: DishRow(
               dish: dish,
               restaurantName: names[dish.restaurantId],
-              onTap: () =>
-                  context.push(AppRoutes.restaurantPath(dish.restaurantId)),
+              onTap: () => context.push(AppRoutes.dishPath(dish.id)),
             ),
           ),
         );

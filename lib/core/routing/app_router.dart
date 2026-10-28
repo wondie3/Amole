@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/cart/cart_screen.dart';
 import '../../features/credits/credits_screen.dart';
+import '../../features/dish/dish_detail_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/restaurants/restaurant_screen.dart';
@@ -16,9 +17,12 @@ abstract final class AppRoutes {
   static const String profile = '/profile';
   static const String credits = '/credits';
   static const String restaurantPattern = '/restaurants/:id';
+  static const String dishPattern = '/dishes/:id';
 
   static String restaurantPath(String id) =>
       '/restaurants/${Uri.encodeComponent(id)}';
+
+  static String dishPath(String id) => '/dishes/${Uri.encodeComponent(id)}';
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -71,6 +75,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.restaurantPattern,
         builder: (context, state) =>
             RestaurantScreen(restaurantId: state.pathParameters['id'] ?? ''),
+      ),
+      GoRoute(
+        path: AppRoutes.dishPattern,
+        builder: (context, state) =>
+            DishDetailScreen(dishId: state.pathParameters['id'] ?? ''),
       ),
     ],
   );

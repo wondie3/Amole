@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../core/routing/app_router.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
@@ -91,7 +94,10 @@ class _RestaurantBody extends StatelessWidget {
         sections.add(
           Padding(
             padding: const EdgeInsets.only(bottom: AppSpacing.md),
-            child: DishRow(dish: d),
+            child: DishRow(
+              dish: d,
+              onTap: () => context.push(AppRoutes.dishPath(d.id)),
+            ),
           ),
         );
       }

@@ -142,9 +142,13 @@ class _HomeContent extends ConsumerWidget {
                 itemCount: dishes.length,
                 separatorBuilder: (context, i) =>
                     const SizedBox(width: AppSpacing.md),
-                itemBuilder: (context, i) => DishCard(
-                  dish: dishes[i],
-                  restaurantName: restaurantNames[dishes[i].restaurantId] ?? '',
+                itemBuilder: (context, i) => Pressable(
+                  onTap: () => context.push(AppRoutes.dishPath(dishes[i].id)),
+                  child: DishCard(
+                    dish: dishes[i],
+                    restaurantName:
+                        restaurantNames[dishes[i].restaurantId] ?? '',
+                  ),
                 ),
               ),
             ),
