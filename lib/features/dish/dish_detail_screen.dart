@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../core/routing/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/money.dart';
@@ -31,24 +33,69 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
     body: SafeArea(child: body),
   );
 
-  void _addToCart(Dish dish) {
-    final capped = ref
-        .read(cartProvider.notifier)
-        .add(
-          CartLine(
-            dishId: dish.id,
-            quantity: _quantity,
-            spice: dish.hasSpiceOptions ? _spice : null,
+  Future<void> _addToCart(Dish dish, String restaurantName) async {
+    final catalog = ref.read(homeDataProvider).value;
+    final cart = ref.read(cartProvider.notifier);
+    final line = CartLine(
+      dishId: dish.id,
+      quantity: _quantity,
+      spice: dish.hasSpiceOptions ? _spice : null,
+    );
+
+    var capped = false;
+    var startedNewCart = false;
+
+    if (catalog != null) {
+      final byId = {for (final x in catalog.dishes) x.id: x};
+      final lines = ref.read(cartProvider);
+      if (conflictsWithCart(lines, byId, dish)) {
+        final currentId = cartRestaurantId(lines, byId);
+        final currentName =
+            catalog.restaurants
+                .where((r) => r.id == currentId)
+                .map((r) => r.name)
+                .firstOrNull ??
+            'another restaurant';
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Start a new cart?'),
+            content: Text(
+              'Your cart has items from $currentName. Adding ${dish.name} '
+              'from $restaurantName will remove them.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Keep my cart'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Start new cart'),
+              ),
+            ],
           ),
         );
+        if (confirmed != true || !mounted) return;
+        cart.replaceWith(line);
+        startedNewCart = true;
+      }
+    }
+
+    if (!startedNewCart) capped = cart.add(line);
+    if (!mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    final router = GoRouter.of(context);
     final limit = capped ? ' Limit of $maxQuantity per item reached.' : '';
-    ScaffoldMessenger.of(context)
+    messenger
       ..clearSnackBars()
       ..showSnackBar(
         SnackBar(
-          content: Text(
-            'Added $_quantity × ${dish.name} to your cart.$limit '
-            'Viewing the cart arrives in Milestone 5.',
+          content: Text('Added $_quantity × ${dish.name} to your cart.$limit'),
+          action: SnackBarAction(
+            label: 'View cart',
+            onPressed: () => router.go(AppRoutes.cart),
           ),
         ),
       );
@@ -197,7 +244,7 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
             AppSpacing.lg,
           ),
           child: FilledButton(
-            onPressed: () => _addToCart(dish),
+            onPressed: () => _addToCart(dish, restaurantName),
             child: Text('Add to cart · ${formatEtb(total)}'),
           ),
         ),

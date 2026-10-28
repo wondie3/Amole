@@ -31,6 +31,24 @@ Future<void> _openSearch(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> _showAddedSnackBar(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 300));
+}
+
+/// Adds two Tibs from the detail page and follows the "View cart" action.
+Future<void> _addTibsAndViewCart(WidgetTester tester) async {
+  await _openSearch(tester);
+  await tester.tap(find.text('Tibs'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byTooltip('Increase quantity'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Add to cart · ETB 640'));
+  await _showAddedSnackBar(tester);
+  await tester.tap(find.text('View cart'));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets('Home shows branding, sections and sample dishes', (
     tester,
@@ -67,7 +85,7 @@ void main() {
 
     await tester.tap(_navLabel('Cart'));
     await tester.pumpAndSettle();
-    expect(find.text('Cart is on its way'), findsOneWidget);
+    expect(find.text('Your cart is empty'), findsOneWidget);
 
     await tester.tap(_navLabel('Profile'));
     await tester.pumpAndSettle();
@@ -138,8 +156,7 @@ void main() {
     expect(find.text('Add to cart · ETB 640'), findsOneWidget);
 
     await tester.tap(find.text('Add to cart · ETB 640'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    await _showAddedSnackBar(tester);
     expect(find.textContaining('Added 2'), findsOneWidget);
   });
 
@@ -157,5 +174,64 @@ void main() {
     await tester.tap(_navLabel('Profile'));
     await tester.pumpAndSettle();
     expect(find.text('Tibs'), findsOneWidget);
+  });
+
+  testWidgets('Cart shows totals, changes quantity and removes a line', (
+    tester,
+  ) async {
+    await _addTibsAndViewCart(tester);
+
+    expect(find.text('Subtotal'), findsOneWidget);
+    expect(find.text('ETB 45'), findsOneWidget);
+    expect(find.text('ETB 685'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Increase quantity of Tibs'));
+    await tester.pumpAndSettle();
+    expect(find.text('ETB 1005'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Remove Tibs from cart'));
+    await tester.pumpAndSettle();
+    expect(find.text('Your cart is empty'), findsOneWidget);
+  });
+
+  testWidgets('Clear cart asks for confirmation', (tester) async {
+    await _addTibsAndViewCart(tester);
+
+    await tester.tap(find.text('Clear cart'));
+    await tester.pumpAndSettle();
+    expect(find.text('Clear cart?'), findsOneWidget);
+
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(find.text('Subtotal'), findsOneWidget);
+
+    await tester.tap(find.text('Clear cart'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Clear cart'));
+    await tester.pumpAndSettle();
+    expect(find.text('Your cart is empty'), findsOneWidget);
+  });
+
+  testWidgets('Adding from another restaurant asks to start a new cart', (
+    tester,
+  ) async {
+    await _openSearch(tester);
+
+    await tester.tap(find.text('Tibs'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Add to cart · ETB 320'));
+    await _showAddedSnackBar(tester);
+
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Doro wat'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Add to cart · ETB 250'));
+    await tester.pumpAndSettle();
+    expect(find.text('Start a new cart?'), findsOneWidget);
+
+    await tester.tap(find.text('Start new cart'));
+    await _showAddedSnackBar(tester);
+    expect(find.textContaining('Added 1'), findsOneWidget);
   });
 }
