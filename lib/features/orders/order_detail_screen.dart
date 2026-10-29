@@ -36,34 +36,65 @@ class OrderDetailScreen extends ConsumerWidget {
   }
 }
 
+Future<bool> _confirm(
+  BuildContext context, {
+  required String title,
+  required String message,
+  required String keepLabel,
+  required String yesLabel,
+}) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(title),
+      content: Text(message),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: Text(keepLabel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: Text(yesLabel),
+        ),
+      ],
+    ),
+  );
+  return confirmed == true;
+}
+
 class _Body extends ConsumerWidget {
   const _Body({required this.order});
 
   final Order order;
 
-  Future<void> _confirmCancel(BuildContext context, WidgetRef ref) async {
+  Future<void> _cancel(BuildContext context, WidgetRef ref) async {
     final notifier = ref.read(ordersProvider.notifier);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Cancel this order?'),
-        content: const Text(
+    final ok = await _confirm(
+      context,
+      title: 'Cancel this order?',
+      message:
           'This demo order will be marked as cancelled. Nothing is refunded '
           'because no money was charged.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Keep order'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Yes, cancel order'),
-          ),
-        ],
-      ),
+      keepLabel: 'Keep order',
+      yesLabel: 'Yes, cancel order',
     );
-    if (confirmed == true) notifier.cancel(order.id);
+    if (ok) notifier.cancel(order.id);
+  }
+
+  Future<void> _request(BuildContext context, WidgetRef ref) async {
+    final notifier = ref.read(ordersProvider.notifier);
+    final ok = await _confirm(
+      context,
+      title: 'Request cancellation?',
+      message:
+          'Your request goes to the restaurant, which decides whether to '
+          'accept it. If it declines, your order stays as it is. Nothing was '
+          'charged. (Simulated: no restaurant is involved.)',
+      keepLabel: 'Keep order',
+      yesLabel: 'Send request',
+    );
+    if (ok) notifier.requestCancellation(order.id);
   }
 
   @override
@@ -79,7 +110,11 @@ class _Body extends ConsumerWidget {
         : '${d.address}, ${d.subCity}';
     final next = nextStatus(order.status);
     final window = estimatedWindow(order);
-    final active = next != null || canCancel(order.status);
+    final request = order.cancellationRequest;
+    final showActions =
+        next != null ||
+        canCancel(order.status) ||
+        canRequestCancellation(order);
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -101,9 +136,10 @@ class _Body extends ConsumerWidget {
               borderRadius: BorderRadius.circular(AppRadii.md),
             ),
             child: Text(
-              'Simulated tracking. The status changes only when you press '
-              '"Simulate next step". No restaurant or courier is involved, '
-              'nothing was charged and there is no live location.',
+              'Simulated tracking. Statuses and restaurant decisions change '
+              'only when you press a "Simulate" button. No restaurant or '
+              'courier is involved, nothing was charged and there is no live '
+              'location.',
               style: textTheme.bodyMedium,
             ),
           ),
@@ -123,7 +159,7 @@ class _Body extends ConsumerWidget {
             style: secondary,
           ),
         ],
-        if (active) ...[
+        if (showActions) ...[
           const SizedBox(height: AppSpacing.md),
           if (next != null)
             OutlinedButton(
@@ -134,9 +170,19 @@ class _Body extends ConsumerWidget {
           if (canCancel(order.status))
             TextButton(
               style: TextButton.styleFrom(foregroundColor: AppColors.error),
-              onPressed: () => _confirmCancel(context, ref),
+              onPressed: () => _cancel(context, ref),
               child: const Text('Cancel order'),
             ),
+          if (canRequestCancellation(order))
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: AppColors.error),
+              onPressed: () => _request(context, ref),
+              child: const Text('Request cancellation'),
+            ),
+        ],
+        if (request != null) ...[
+          const SizedBox(height: AppSpacing.md),
+          _RequestCard(order: order, request: request),
         ],
         const SizedBox(height: AppSpacing.xl),
         Text('Delivery', style: textTheme.titleMedium),
@@ -188,6 +234,80 @@ class _Body extends ConsumerWidget {
           style: textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
         ),
       ],
+    );
+  }
+}
+
+class _RequestCard extends ConsumerWidget {
+  const _RequestCard({required this.order, required this.request});
+
+  final Order order;
+  final CancellationRequest request;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final textTheme = Theme.of(context).textTheme;
+    final notifier = ref.read(ordersProvider.notifier);
+    final String title;
+    final List<Widget> body;
+    switch (request.status) {
+      case CancellationRequestStatus.pending:
+        title = 'Cancellation requested';
+        body = [
+          const Text(
+            'Waiting for the restaurant to decide. Your order carries on '
+            'until then.',
+          ),
+          if (!canAcceptCancellation(order))
+            const Text(
+              'The order has left the restaurant, so support would handle '
+              'this.',
+            ),
+          const SizedBox(height: AppSpacing.sm),
+          TextButton(
+            onPressed: () => notifier.withdrawCancellation(order.id),
+            child: const Text('Withdraw request'),
+          ),
+          if (canAcceptCancellation(order))
+            OutlinedButton(
+              onPressed: () =>
+                  notifier.simulateDecision(order.id, accept: true),
+              child: const Text('Simulate: restaurant accepts'),
+            ),
+          OutlinedButton(
+            onPressed: () => notifier.simulateDecision(order.id, accept: false),
+            child: const Text('Simulate: restaurant declines'),
+          ),
+        ];
+      case CancellationRequestStatus.accepted:
+        title = 'Cancellation accepted';
+        body = const [
+          Text('The restaurant accepted your request. Nothing was charged.'),
+        ];
+      case CancellationRequestStatus.declined:
+        title = 'Cancellation declined';
+        body = [
+          const Text('Your order continues as before.'),
+          if (request.decisionReason != null)
+            Text('Reason: ${request.decisionReason}'),
+        ];
+    }
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        border: Border.all(color: AppColors.outline),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: textTheme.titleMedium),
+          const SizedBox(height: AppSpacing.xs),
+          ...body,
+        ],
+      ),
     );
   }
 }

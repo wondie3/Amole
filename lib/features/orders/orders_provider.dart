@@ -59,8 +59,31 @@ class OrdersNotifier extends Notifier<List<Order>> {
   /// is unknown or cannot move.
   bool advance(String id) => _apply(id, advanceOrder);
 
-  /// Cancels an order if its status allows it. Returns false otherwise.
+  /// Cancels a placed order. Returns false for any other status.
   bool cancel(String id) => _apply(id, cancelOrder);
+
+  /// Customer asks the restaurant to cancel. Returns false if not allowed.
+  bool requestCancellation(String id, {DateTime? now}) {
+    final time = now ?? DateTime.now();
+    return _apply(id, (o) => applyCancellationRequest(o, time));
+  }
+
+  /// Customer withdraws a pending request.
+  bool withdrawCancellation(String id) => _apply(id, applyWithdrawal);
+
+  /// Simulated: stands in for restaurant staff accepting or declining.
+  bool simulateDecision(String id, {required bool accept, DateTime? now}) {
+    final time = now ?? DateTime.now();
+    return _apply(
+      id,
+      (o) => applyDecision(
+        o,
+        accept: accept,
+        now: time,
+        reason: accept ? null : simulatedDeclineReason,
+      ),
+    );
+  }
 
   bool _apply(String id, Order? Function(Order) change) {
     final i = state.indexWhere((o) => o.id == id);

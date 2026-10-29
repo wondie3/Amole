@@ -4,6 +4,7 @@ enum OrderStatus {
   placed('Placed'),
   confirmed('Confirmed'),
   preparing('Preparing'),
+  ready('Ready for pickup'),
   outForDelivery('Out for delivery'),
   delivered('Delivered'),
   cancelled('Cancelled');
@@ -23,6 +24,64 @@ enum PaymentMethod {
   /// False for methods that need a real payment provider integration.
   final bool available;
   final String note;
+}
+
+enum CancellationRequestStatus { pending, accepted, declined }
+
+/// A customer's request to cancel an order the restaurant has already
+/// accepted. Only restaurant staff decide it (simulated for now).
+class CancellationRequest {
+  const CancellationRequest({
+    required this.status,
+    required this.requestedAt,
+    this.decidedAt,
+    this.decisionReason,
+  });
+
+  final CancellationRequestStatus status;
+  final DateTime requestedAt;
+  final DateTime? decidedAt;
+  final String? decisionReason;
+
+  bool get isPending => status == CancellationRequestStatus.pending;
+
+  CancellationRequest copyWith({
+    CancellationRequestStatus? status,
+    DateTime? decidedAt,
+    String? decisionReason,
+  }) => CancellationRequest(
+    status: status ?? this.status,
+    requestedAt: requestedAt,
+    decidedAt: decidedAt ?? this.decidedAt,
+    decisionReason: decisionReason ?? this.decisionReason,
+  );
+
+  Map<String, Object?> toJson() => {
+    'status': status.name,
+    'requestedAt': requestedAt.toUtc().toIso8601String(),
+    'decidedAt': decidedAt?.toUtc().toIso8601String(),
+    'reason': decisionReason,
+  };
+
+  /// Returns null if [json] is not a valid saved request.
+  static CancellationRequest? tryFromJson(Object? json) {
+    if (json is! Map) return null;
+    final status = CancellationRequestStatus.values
+        .where((v) => v.name == json['status'])
+        .firstOrNull;
+    final requestedRaw = json['requestedAt'];
+    if (status == null || requestedRaw is! String) return null;
+    final requestedAt = DateTime.tryParse(requestedRaw);
+    if (requestedAt == null) return null;
+    final decidedRaw = json['decidedAt'];
+    final reason = json['reason'];
+    return CancellationRequest(
+      status: status,
+      requestedAt: requestedAt,
+      decidedAt: decidedRaw is String ? DateTime.tryParse(decidedRaw) : null,
+      decisionReason: reason is String ? reason : null,
+    );
+  }
 }
 
 /// A copy of a cart line taken at the moment of ordering.
@@ -108,6 +167,7 @@ class Order {
     this.simulated = true,
     this.etaMinMinutes,
     this.etaMaxMinutes,
+    this.cancellationRequest,
   });
 
   final String id;
@@ -128,11 +188,18 @@ class Order {
   final int? etaMinMinutes;
   final int? etaMaxMinutes;
 
+  /// Null until the customer asks to cancel a confirmed order.
+  final CancellationRequest? cancellationRequest;
+
   int get subtotalSantim => items.fold(0, (sum, i) => sum + i.lineTotalSantim);
   int get totalSantim => subtotalSantim + deliveryFeeSantim;
   int get itemCount => items.fold(0, (sum, i) => sum + i.quantity);
 
-  Order copyWith({OrderStatus? status}) => Order(
+  Order copyWith({
+    OrderStatus? status,
+    CancellationRequest? cancellationRequest,
+    bool clearCancellationRequest = false,
+  }) => Order(
     id: id,
     createdAt: createdAt,
     restaurantId: restaurantId,
@@ -145,6 +212,9 @@ class Order {
     simulated: simulated,
     etaMinMinutes: etaMinMinutes,
     etaMaxMinutes: etaMaxMinutes,
+    cancellationRequest: clearCancellationRequest
+        ? null
+        : (cancellationRequest ?? this.cancellationRequest),
   );
 
   /// Saved form. Personal contact details (name, phone, street, landmark) are
@@ -162,6 +232,7 @@ class Order {
     'simulated': simulated,
     'etaMin': etaMinMinutes,
     'etaMax': etaMaxMinutes,
+    'cancellation': cancellationRequest?.toJson(),
   };
 
   /// Returns null if [json] is not a valid saved order.
@@ -227,6 +298,11 @@ class Order {
       simulated: json['simulated'] is bool ? json['simulated'] as bool : true,
       etaMinMinutes: validEta ? etaMin : null,
       etaMaxMinutes: validEta ? etaMax : null,
+      // Optional: older saved orders do not have it, and a malformed one is
+      // ignored instead of dropping the whole order.
+      cancellationRequest: CancellationRequest.tryFromJson(
+        json['cancellation'],
+      ),
     );
   }
 }
