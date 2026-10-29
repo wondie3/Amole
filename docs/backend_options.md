@@ -1,4 +1,4 @@
-# Backend options (DECISION OPEN)
+# Backend options
 
 Nothing is migrated, deployed or connected. This compares options for Amole;
 verify current pricing, regions and features in each provider's docs before
@@ -35,3 +35,14 @@ and hosting.
 ## Open questions
 Who hosts and pays? Which SMS/OTP provider works in Ethiopia? Which payment
 provider and what onboarding does it require? Where may user data be stored?
+## Decision
+Chosen: **Supabase** as a separate backend for Amole (not the existing
+Next.js app). Nothing is created or connected yet.
+
+Consequences to handle when building:
+- Order totals, status transitions and cancellation run in Postgres functions
+  or Edge Functions. The app gets no direct write access to those tables.
+- Row-level security protects every table and needs automated tests.
+- Staff roles are tied to one restaurant and enforced in the same policies.
+- Still open: hosting region and latency from Addis Ababa, the email provider
+  for verification and reset emails, and the payment provider integration.
