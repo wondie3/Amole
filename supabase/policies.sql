@@ -79,7 +79,16 @@ create policy addresses_delete_own on public.addresses
 -- status, prices and totals cannot be changed from the app.
 -- NOTE: staff can see the customer's delivery name, phone and street, which
 -- the restaurant needs. Couriers get a separate, narrower rule later.
-grant select on public.orders to authenticated;
+-- Column-level grant: phone, street and landmark are NOT readable through the
+-- API by anyone. Staff get them only via staff_get_order_contact, customers
+-- via my_order_contact (functions.sql). Clients must list columns explicitly;
+-- "select *" on orders fails with permission denied. If a column is added to
+-- orders, decide deliberately whether to grant it here.
+grant select (
+  id, user_id, restaurant_id, status, subtotal_santim, delivery_fee_santim,
+  total_santim, delivery_name, delivery_sub_city, fulfillment, payment_method,
+  payment_status, eta_from, eta_to, created_at, updated_at
+) on public.orders to authenticated;
 create policy orders_select_own on public.orders
   for select to authenticated using (user_id = (select auth.uid()));
 create policy orders_select_staff on public.orders
@@ -97,3 +106,8 @@ create policy cancellation_requests_select_via_order on public.cancellation_requ
 
 -- audit_log: no grants and no policies, so clients cannot read or write it.
 -- Support reads it with the service role.
+-- dish_images: public menu photos, read-only.
+alter table public.dish_images enable row level security;
+grant select on public.dish_images to anon, authenticated;
+create policy dish_images_public_read on public.dish_images
+  for select to anon, authenticated using (true);

@@ -108,6 +108,7 @@ create table public.orders (
   delivery_sub_city text not null,
   delivery_street text,
   delivery_landmark text,
+  fulfillment text not null default 'delivery' check (fulfillment in ('delivery', 'pickup')),
   payment_method public.payment_method not null,
   payment_status public.payment_status not null default 'pending',
   eta_from timestamptz,
@@ -170,3 +171,14 @@ create table public.audit_log (
   detail jsonb
 );
 create index audit_log_order_idx on public.audit_log (order_id);
+-- Several photos per dish. Exactly one may be primary.
+create table public.dish_images (
+  id uuid primary key default gen_random_uuid(),
+  dish_id uuid not null references public.dishes (id) on delete cascade,
+  url text not null,
+  credit text,
+  sort_order int not null default 0,
+  is_primary boolean not null default false
+);
+create index dish_images_dish_idx on public.dish_images (dish_id, sort_order);
+create unique index dish_images_one_primary on public.dish_images (dish_id) where is_primary;
