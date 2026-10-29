@@ -2,29 +2,25 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/catalog_providers.dart';
-import '../../data/preferences_provider.dart';
+import '../../data/repositories/orders_repository.dart';
+import '../../data/repository_providers.dart';
 import '../../models/order.dart';
 import '../cart/cart_provider.dart';
 import '../checkout/checkout_logic.dart';
 import 'order_status_logic.dart';
 import 'orders_logic.dart';
 
-/// Simulated orders, newest first, saved on this phone only. Real orders will
-/// be created and stored by a backend.
+/// Simulated orders, newest first, stored through the orders repository.
+/// Real orders will be created and stored by a backend.
 class OrdersNotifier extends Notifier<List<Order>> {
-  static const String storageKey = 'order_history_v1';
+  static const String storageKey = LocalOrdersRepository.storageKey;
 
   @override
-  List<Order> build() {
-    final prefs = ref.watch(sharedPreferencesProvider);
-    return decodeOrders(prefs.getString(storageKey));
-  }
+  List<Order> build() => ref.watch(ordersRepositoryProvider).load();
 
   Future<void> _save(List<Order> orders) async {
     try {
-      await ref
-          .read(sharedPreferencesProvider)
-          .setString(storageKey, encodeOrders(orders));
+      await ref.read(ordersRepositoryProvider).save(orders);
     } catch (error) {
       // History still works for this session; saving failed.
       debugPrint('Could not save order history: $error');

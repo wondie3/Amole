@@ -1,19 +1,17 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/preferences_provider.dart';
+import '../../data/repositories/addresses_repository.dart';
+import '../../data/repository_providers.dart';
 import '../../models/saved_address.dart';
 import 'addresses_logic.dart';
 
-/// Saved delivery addresses, kept on this phone only (unencrypted).
+/// Saved delivery addresses, stored through the addresses repository.
 class AddressesNotifier extends Notifier<AddressBook> {
-  static const String storageKey = 'saved_addresses_v1';
+  static const String storageKey = LocalAddressesRepository.storageKey;
 
   @override
-  AddressBook build() {
-    final prefs = ref.watch(sharedPreferencesProvider);
-    return decodeAddressBook(prefs.getString(storageKey));
-  }
+  AddressBook build() => ref.watch(addressesRepositoryProvider).load();
 
   void _set(AddressBook next) {
     state = next;
@@ -22,9 +20,7 @@ class AddressesNotifier extends Notifier<AddressBook> {
 
   Future<void> _save(AddressBook book) async {
     try {
-      await ref
-          .read(sharedPreferencesProvider)
-          .setString(storageKey, encodeAddressBook(book));
+      await ref.read(addressesRepositoryProvider).save(book);
     } catch (error) {
       // Addresses still work for this session; saving failed.
       debugPrint('Could not save addresses: $error');
