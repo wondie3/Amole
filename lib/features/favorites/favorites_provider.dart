@@ -1,25 +1,22 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/preferences_provider.dart';
+import '../../data/repositories/favorites_repository.dart';
+import '../../data/repository_providers.dart';
 
-/// Ids of favorite dishes, saved on this phone only.
+/// Ids of favorite dishes, saved through the favorites repository.
 class FavoritesNotifier extends Notifier<Set<String>> {
-  static const String storageKey = 'favorite_dish_ids';
+  static const String storageKey = LocalFavoritesRepository.storageKey;
 
   @override
-  Set<String> build() {
-    final prefs = ref.watch(sharedPreferencesProvider);
-    return (prefs.getStringList(storageKey) ?? const <String>[]).toSet();
-  }
+  Set<String> build() => ref.watch(favoritesRepositoryProvider).load();
 
   Future<void> toggle(String dishId) async {
     final next = {...state};
     if (!next.remove(dishId)) next.add(dishId);
     state = next;
     try {
-      final list = next.toList()..sort();
-      await ref.read(sharedPreferencesProvider).setStringList(storageKey, list);
+      await ref.read(favoritesRepositoryProvider).save(next);
     } catch (error) {
       // The heart still works for this session; saving failed.
       debugPrint('Could not save favorites: $error');
