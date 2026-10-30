@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/addresses/address_book_screen.dart';
 import '../../features/addresses/address_form_screen.dart';
+import '../../features/auth/auth_screen.dart';
 import '../../features/cart/cart_screen.dart';
 import '../../features/checkout/checkout_screen.dart';
 import '../../features/checkout/order_confirmation_screen.dart';
@@ -23,6 +24,7 @@ abstract final class AppRoutes {
   static const String cart = '/cart';
   static const String profile = '/profile';
   static const String credits = '/credits';
+  static const String auth = '/auth';
   static const String checkout = '/checkout';
   static const String orders = '/orders';
   static const String settings = '/settings';
@@ -90,6 +92,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: AppRoutes.auth,
+        builder: (context, state) => const AuthScreen(),
       ),
       GoRoute(
         path: AppRoutes.credits,
