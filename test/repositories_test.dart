@@ -92,13 +92,22 @@ void main() {
   group('not connected stand-ins', () {
     test('auth never signs anyone in', () async {
       const auth = NotConnectedAuthRepository();
-      expect(await auth.requestOtp('+251911223344'), isA<NotAvailable<void>>());
+      expect(auth.isConnected, isFalse);
+      expect(auth.currentUser, isNull);
       expect(
-        await auth.verifyOtp('+251911223344', '123456'),
+        await auth.signIn(email: 'a@b.co', password: 'x'),
         isA<NotAvailable<AuthUser>>(),
       );
-      expect(await auth.currentUser(), isNull);
+      expect(
+        await auth.signUp(email: 'a@b.co', password: 'x', name: 'A B'),
+        isA<NotAvailable<AuthUser?>>(),
+      );
+      expect(
+        await auth.requestPasswordReset(email: 'a@b.co'),
+        isA<NotAvailable<void>>(),
+      );
       expect(await auth.signOut(), isA<NotAvailable<void>>());
+      expect(await auth.authChanges.isEmpty, isTrue);
     });
 
     test('payments never report a payment as started or paid', () async {
@@ -115,10 +124,11 @@ void main() {
       );
     });
 
-    test('the providers hand out the stand-ins', () async {
+    test('without a backend the providers hand out the stand-ins', () async {
       SharedPreferences.setMockInitialValues({});
       final c = ProviderContainer();
       addTearDown(c.dispose);
+      expect(c.read(backendEnabledProvider), isFalse);
       expect(c.read(authRepositoryProvider), isA<NotConnectedAuthRepository>());
       expect(
         c.read(paymentRepositoryProvider),

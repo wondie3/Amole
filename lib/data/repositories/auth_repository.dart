@@ -1,19 +1,39 @@
 import 'result.dart';
 
 class AuthUser {
-  const AuthUser({required this.id, required this.phone, this.name});
+  const AuthUser({required this.id, required this.email, this.name});
 
   final String id;
-  final String phone;
+  final String email;
   final String? name;
 }
 
-/// Sign-in. See docs/api/auth.md. No backend exists yet, so the only
-/// implementation is [NotConnectedAuthRepository].
+/// Email and password accounts. See docs/api/auth.md. Passwords are only
+/// passed through to the backend; the app never stores them.
 abstract interface class AuthRepository {
-  Future<Result<void>> requestOtp(String phone);
-  Future<Result<AuthUser>> verifyOtp(String phone, String code);
-  Future<AuthUser?> currentUser();
+  /// False when no backend is configured in this build.
+  bool get isConnected;
+
+  AuthUser? get currentUser;
+
+  /// Emits the signed-in user, or null after sign-out.
+  Stream<AuthUser?> get authChanges;
+
+  /// Ok(user) if signed in at once, Ok(null) if email verification is needed.
+  Future<Result<AuthUser?>> signUp({
+    required String email,
+    required String password,
+    required String name,
+  });
+
+  Future<Result<AuthUser>> signIn({
+    required String email,
+    required String password,
+  });
+
+  /// Always looks the same to the caller, whether or not the account exists.
+  Future<Result<void>> requestPasswordReset({required String email});
+
   Future<Result<void>> signOut();
 }
 
@@ -22,18 +42,33 @@ class NotConnectedAuthRepository implements AuthRepository {
   const NotConnectedAuthRepository();
 
   static const String message =
-      'Sign-in is not available yet. No backend is connected.';
+      'Sign-in is not available in this build. No backend is connected.';
 
   @override
-  Future<Result<void>> requestOtp(String phone) async =>
+  bool get isConnected => false;
+
+  @override
+  AuthUser? get currentUser => null;
+
+  @override
+  Stream<AuthUser?> get authChanges => Stream<AuthUser?>.empty();
+
+  @override
+  Future<Result<AuthUser?>> signUp({
+    required String email,
+    required String password,
+    required String name,
+  }) async => const NotAvailable<AuthUser?>(message);
+
+  @override
+  Future<Result<AuthUser>> signIn({
+    required String email,
+    required String password,
+  }) async => const NotAvailable<AuthUser>(message);
+
+  @override
+  Future<Result<void>> requestPasswordReset({required String email}) async =>
       const NotAvailable<void>(message);
-
-  @override
-  Future<Result<AuthUser>> verifyOtp(String phone, String code) async =>
-      const NotAvailable<AuthUser>(message);
-
-  @override
-  Future<AuthUser?> currentUser() async => null;
 
   @override
   Future<Result<void>> signOut() async => const NotAvailable<void>(message);

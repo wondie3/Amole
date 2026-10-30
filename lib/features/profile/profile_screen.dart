@@ -6,15 +6,19 @@ import '../../core/routing/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../data/catalog_providers.dart';
+import '../../data/repositories/auth_repository.dart';
+import '../../data/repositories/result.dart';
+import '../../data/repository_providers.dart';
 import '../../shared/widgets/catalog_rows.dart';
 import '../../shared/widgets/nav_tile.dart';
 import '../../shared/widgets/state_views.dart';
 import '../addresses/addresses_provider.dart';
+import '../auth/auth_provider.dart';
 import '../favorites/favorites_provider.dart';
 import '../orders/orders_provider.dart';
 
-/// Profile hub. There are no accounts yet; everything here is local to this
-/// phone.
+/// Profile hub. Orders, addresses and favorites are still local demo data;
+/// the account section only reflects sign-in.
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
@@ -45,12 +49,7 @@ class ProfileScreen extends ConsumerWidget {
             children: [
               Text('Profile', style: textTheme.headlineSmall),
               const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Sign-in is not available yet. Accounts need a secure '
-                'backend, so Amole does not collect passwords or pretend to '
-                'sign you in. Nothing is linked to an account.',
-                style: secondary,
-              ),
+              const _AccountCard(),
               const SizedBox(height: AppSpacing.lg),
               NavTile(
                 icon: Icons.receipt_long_outlined,
@@ -119,6 +118,72 @@ class ProfileScreen extends ConsumerWidget {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _AccountCard extends ConsumerWidget {
+  const _AccountCard();
+
+  Future<void> _signOut(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final result = await ref.read(authRepositoryProvider).signOut();
+    if (result is Failure<void>) {
+      messenger.showSnackBar(SnackBar(content: Text(result.message)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final textTheme = Theme.of(context).textTheme;
+    final secondary = textTheme.bodyMedium?.copyWith(
+      color: AppColors.textSecondary,
+    );
+    final connected = ref.watch(authRepositoryProvider).isConnected;
+    final AuthUser? user = ref.watch(authUserProvider);
+
+    if (!connected) {
+      return Text(
+        'Sign-in is not available in this build. Amole is not connected to a '
+        'backend, so there are no accounts. Everything here is demo data on '
+        'this phone.',
+        style: secondary,
+      );
+    }
+    if (user == null) {
+      return NavTile(
+        icon: Icons.person_outline,
+        title: 'Sign in or create account',
+        subtitle: 'Local test backend. Orders stay demo data for now.',
+        onTap: () => context.push(AppRoutes.auth),
+      );
+    }
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        border: Border.all(color: AppColors.outline),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Signed in', style: textTheme.titleMedium),
+          Text(user.email),
+          if (user.name != null) Text(user.name!),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Orders, addresses and favorites are still demo data on this '
+            'phone. Connecting them to your account comes in the next step.',
+            style: secondary,
+          ),
+          TextButton(
+            onPressed: () => _signOut(context, ref),
+            child: const Text('Sign out'),
+          ),
+        ],
       ),
     );
   }
