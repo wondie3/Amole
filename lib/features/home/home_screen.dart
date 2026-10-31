@@ -10,7 +10,7 @@ import '../../data/sample_data.dart';
 import '../../shared/widgets/amole_wordmark.dart';
 import '../../shared/widgets/pressable.dart';
 import '../addresses/address_picker.dart';
-import '../addresses/addresses_provider.dart';
+import '../addresses/addresses_active.dart';
 import 'home_providers.dart';
 import 'home_widgets.dart';
 
@@ -55,7 +55,7 @@ class _HomeContent extends ConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
     final scale = MediaQuery.textScalerOf(context);
     final selected = ref.watch(selectedCategoryProvider);
-    final address = ref.watch(addressesProvider).selected;
+    final address = ref.watch(activeAddressesProvider).selected;
     final restaurantNames = {for (final r in data.restaurants) r.id: r.name};
     final dishes = selected == 'all'
         ? data.dishes

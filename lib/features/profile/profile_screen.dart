@@ -12,7 +12,7 @@ import '../../data/repository_providers.dart';
 import '../../shared/widgets/catalog_rows.dart';
 import '../../shared/widgets/nav_tile.dart';
 import '../../shared/widgets/state_views.dart';
-import '../addresses/addresses_provider.dart';
+import '../addresses/addresses_active.dart';
 import '../auth/auth_provider.dart';
 import '../favorites/favorites_provider.dart';
 import '../orders/orders_provider.dart';
@@ -27,7 +27,7 @@ class ProfileScreen extends ConsumerWidget {
     final catalog = ref.watch(homeDataProvider);
     final favoriteIds = ref.watch(favoritesProvider);
     final orderCount = ref.watch(ordersProvider).length;
-    final addressCount = ref.watch(addressesProvider).addresses.length;
+    final addressCount = ref.watch(activeAddressesProvider).addresses.length;
     final textTheme = Theme.of(context).textTheme;
     final secondary = textTheme.bodyMedium?.copyWith(
       color: AppColors.textSecondary,
