@@ -13,7 +13,7 @@ import '../../shared/widgets/state_views.dart';
 import '../cart/cart_logic.dart';
 import '../cart/cart_provider.dart';
 import '../orders/orders_provider.dart';
-import '../addresses/addresses_provider.dart';
+import '../addresses/addresses_active.dart';
 import 'checkout_logic.dart';
 
 OutlineInputBorder _border(Color color) => OutlineInputBorder(
@@ -53,7 +53,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   @override
   void initState() {
     super.initState();
-    final saved = ref.read(addressesProvider).selected;
+    final saved = ref.read(activeAddressesProvider).selected;
     if (saved != null) {
       _name.text = saved.name;
       _phone.text = saved.phone;

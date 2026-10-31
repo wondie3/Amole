@@ -6,8 +6,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../models/saved_address.dart';
 import '../checkout/checkout_logic.dart';
+import 'addresses_active.dart';
 import 'addresses_logic.dart';
-import 'addresses_provider.dart';
 
 OutlineInputBorder _border(Color color) => OutlineInputBorder(
   borderRadius: BorderRadius.circular(AppRadii.md),
@@ -26,7 +26,8 @@ InputDecoration _decoration(String label, {String? hint}) => InputDecoration(
   focusedErrorBorder: _border(AppColors.error),
 );
 
-/// Add (addressId == null) or edit a saved address.
+/// Add (addressId == null) or edit an address. Goes to the account when
+/// signed in with a backend, otherwise to this phone.
 class AddressFormScreen extends ConsumerStatefulWidget {
   const AddressFormScreen({super.key, this.addressId});
 
@@ -46,6 +47,7 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
   String? _subCity;
   SavedAddress? _existing;
   bool _missing = false;
+  bool _saving = false;
 
   @override
   void initState() {
@@ -53,7 +55,7 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
     final id = widget.addressId;
     if (id == null) return;
     final existing = ref
-        .read(addressesProvider)
+        .read(activeAddressesProvider)
         .addresses
         .where((a) => a.id == id)
         .firstOrNull;
@@ -80,7 +82,8 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
+    if (_saving) return;
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final existing = _existing;
     final landmark = _landmark.text.trim();
@@ -95,21 +98,17 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
       address: _address.text.trim(),
       landmark: landmark.isEmpty ? null : landmark,
     );
-    final notifier = ref.read(addressesProvider.notifier);
-    if (existing == null) {
-      if (!notifier.add(address)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'You have reached the limit of saved addresses. Delete one '
-              'first.',
-            ),
-          ),
-        );
-        return;
-      }
-    } else {
-      notifier.update(address);
+    setState(() => _saving = true);
+    final actions = ref.read(addressActionsProvider);
+    final error = await (existing == null
+        ? actions.add(address)
+        : actions.update(address));
+    if (!mounted) return;
+    if (error != null) {
+      setState(() => _saving = false);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error)));
+      return;
     }
     context.pop();
   }
@@ -132,6 +131,7 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
     }
 
     final textTheme = Theme.of(context).textTheme;
+    final account = ref.watch(addressModeProvider) == AddressMode.account;
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: SafeArea(
@@ -144,8 +144,13 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Saved on this phone only, without encryption, and not '
-                  'linked to an account. You can delete it any time.',
+                  account
+                      ? 'Saved in your account on the local test server, and '
+                            'separate from the addresses on this phone. You '
+                            'can delete it any time.'
+                      : 'Saved on this phone only, without encryption, and '
+                            'not linked to an account. You can delete it any '
+                            'time.',
                   style: textTheme.bodySmall?.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -269,8 +274,8 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
             AppSpacing.lg,
           ),
           child: FilledButton(
-            onPressed: _save,
-            child: const Text('Save address'),
+            onPressed: _saving ? null : _save,
+            child: Text(_saving ? 'Saving...' : 'Save address'),
           ),
         ),
       ),
