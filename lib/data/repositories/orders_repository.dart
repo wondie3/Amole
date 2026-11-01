@@ -12,16 +12,19 @@ abstract interface class OrdersRepository {
 }
 
 class LocalOrdersRepository implements OrdersRepository {
-  const LocalOrdersRepository(this._prefs);
+  const LocalOrdersRepository(this._prefs, {this.key = storageKey});
 
   static const String storageKey = 'order_history_v1';
 
   final SharedPreferences _prefs;
 
+  /// The key to use. Differs per signed-in account.
+  final String key;
+
   @override
-  List<Order> load() => decodeOrders(_prefs.getString(storageKey));
+  List<Order> load() => decodeOrders(_prefs.getString(key));
 
   @override
   Future<void> save(List<Order> orders) =>
-      _prefs.setString(storageKey, encodeOrders(orders));
+      _prefs.setString(key, encodeOrders(orders));
 }

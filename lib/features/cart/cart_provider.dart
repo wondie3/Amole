@@ -2,30 +2,37 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/preferences_provider.dart';
+import '../../data/storage_scope.dart';
 import '../../models/cart_line.dart';
 import 'cart_logic.dart';
 
-/// Cart saved on this phone only. Prices are never stored, only dish ids and
-/// quantities, so totals always come from the current catalog.
+/// Cart saved on this phone only, separately for the guest and for each
+/// signed-in account. Prices are never stored, only dish ids and quantities,
+/// so totals always come from the current catalog.
 class CartNotifier extends Notifier<List<CartLine>> {
   static const String storageKey = 'cart_lines_v1';
+
+  // The key for the current scope. build() runs again when the user changes,
+  // so this always matches the cart held in [state].
+  String _key = storageKey;
 
   @override
   List<CartLine> build() {
     final prefs = ref.watch(sharedPreferencesProvider);
-    return decodeCart(prefs.getString(storageKey));
+    _key = scopedKey(storageKey, ref.watch(storageScopeProvider));
+    return decodeCart(prefs.getString(_key));
   }
 
   void _set(List<CartLine> next) {
     state = next;
-    _save(next);
+    _save(_key, next);
   }
 
-  Future<void> _save(List<CartLine> lines) async {
+  Future<void> _save(String key, List<CartLine> lines) async {
     try {
       await ref
           .read(sharedPreferencesProvider)
-          .setString(storageKey, encodeCart(lines));
+          .setString(key, encodeCart(lines));
     } catch (error) {
       // The cart still works for this session; saving failed.
       debugPrint('Could not save cart: $error');
