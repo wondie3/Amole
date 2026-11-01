@@ -7,8 +7,10 @@ class Restaurant {
     required this.etaMinMinutes,
     required this.etaMaxMinutes,
     required this.deliveryFeeSantim,
+    this.remoteId,
   });
 
+  /// Stable app id (the slug).
   final String id;
   final String name;
   final String cuisine;
@@ -18,4 +20,7 @@ class Restaurant {
   final int etaMinMinutes;
   final int etaMaxMinutes;
   final int deliveryFeeSantim;
+
+  /// The database id. Null for the local sample menu.
+  final String? remoteId;
 }

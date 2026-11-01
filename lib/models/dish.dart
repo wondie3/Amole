@@ -9,8 +9,10 @@ class Dish {
     required this.imageAsset,
     this.description = '',
     this.hasSpiceOptions = false,
+    this.remoteId,
   });
 
+  /// Stable app id (the slug), used by favorites, the cart and saved orders.
   final String id;
   final String name;
   final String restaurantId;
@@ -24,4 +26,8 @@ class Dish {
   final String imageAsset;
   final String description;
   final bool hasSpiceOptions;
+
+  /// The database id. Null for the local sample menu, which cannot be ordered
+  /// from the server.
+  final String? remoteId;
 }
