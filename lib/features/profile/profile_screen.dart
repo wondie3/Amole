@@ -175,8 +175,7 @@ class _AccountCard extends ConsumerWidget {
           if (user.name != null) Text(user.name!),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Orders, addresses and favorites are still demo data on this '
-            'phone. Connecting them to your account comes in the next step.',
+            'Your cart, favorites and demo orders are kept separately for this account, but still only on this phone. Orders are not sent to a server yet.',
             style: secondary,
           ),
           TextButton(
