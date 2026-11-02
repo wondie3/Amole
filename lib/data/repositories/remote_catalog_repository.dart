@@ -39,6 +39,7 @@ Restaurant? restaurantFromRow(Object? row) {
   }
   return Restaurant(
     id: slug,
+    remoteId: _str(row['id']),
     name: name,
     cuisine: cuisine,
     rating: rating.toDouble(),
@@ -73,6 +74,7 @@ Dish? dishFromRow(Object? row) {
   final image = row['image_asset'];
   return Dish(
     id: slug,
+    remoteId: _str(row['id']),
     name: name,
     restaurantId: restaurantSlug,
     categoryId: category,

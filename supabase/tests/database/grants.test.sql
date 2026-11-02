@@ -11,8 +11,8 @@ select set_eq(
   $$ values ('is_staff_of'), ('select_address'), ('place_order'),
             ('request_order_cancellation'), ('withdraw_order_cancellation'),
             ('my_order_contact'), ('staff_advance_order'), ('staff_cancel_order'),
-            ('staff_decide_cancellation'), ('staff_get_order_contact') $$,
-  'authenticated can execute exactly the 10 intended functions'
+            ('staff_decide_cancellation'), ('staff_get_order_contact'), ('my_orders') $$,
+  'authenticated can execute exactly the 11 intended functions'
 );
 
 select is_empty(

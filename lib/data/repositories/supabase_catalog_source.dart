@@ -14,7 +14,7 @@ class SupabaseCatalogSource implements CatalogRemoteSource {
     final rows = await _client
         .from('restaurants')
         .select(
-          'slug, name, cuisine, rating, eta_min_minutes, eta_max_minutes, '
+          'id, slug, name, cuisine, rating, eta_min_minutes, eta_max_minutes, '
           'delivery_fee_santim',
         )
         .order('sort_order');
@@ -26,7 +26,7 @@ class SupabaseCatalogSource implements CatalogRemoteSource {
     final rows = await _client
         .from('dishes')
         .select(
-          'slug, name, description, price_santim, rating, category, '
+          'id, slug, name, description, price_santim, rating, category, '
           'has_spice_options, image_asset, available, restaurants!inner(slug)',
         )
         .order('sort_order');
