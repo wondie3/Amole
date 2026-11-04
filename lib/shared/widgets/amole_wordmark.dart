@@ -5,9 +5,16 @@ import '../../core/theme/app_colors.dart';
 /// TEMPORARY text-based wordmark. This is not a designed logo asset; a
 /// professional logo should replace it before release.
 class AmoleWordmark extends StatelessWidget {
-  const AmoleWordmark({super.key, this.fontSize = 40});
+  const AmoleWordmark({
+    super.key,
+    this.fontSize = 40,
+    this.color = AppColors.forest,
+  });
 
   final double fontSize;
+
+  /// Color of the letters. The dot is always the brand orange.
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +33,7 @@ class AmoleWordmark extends StatelessWidget {
                 fontWeight: FontWeight.w800,
                 letterSpacing: -0.5,
                 height: 1,
-                color: AppColors.forest,
+                color: color,
               ),
             ),
             SizedBox(width: fontSize * 0.06),
