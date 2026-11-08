@@ -724,10 +724,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
               : const Duration(milliseconds: 350),
           switchInCurve: Curves.easeOutCubic,
           switchOutCurve: Curves.easeIn,
-          layoutBuilder: (current, previous) => Stack(
-            fit: StackFit.expand,
-            children: [...previous, if (current != null) current],
-          ),
+          layoutBuilder: (current, previous) =>
+              Stack(fit: StackFit.expand, children: [...previous, ?current]),
           transitionBuilder: (child, animation) => FadeTransition(
             opacity: animation,
             child: SlideTransition(

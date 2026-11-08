@@ -9,10 +9,13 @@ import '../../data/catalog_providers.dart';
 import '../../data/sample_data.dart';
 import '../../shared/widgets/amole_wordmark.dart';
 import '../../shared/widgets/pressable.dart';
+import '../../shared/widgets/reveal.dart';
 import '../addresses/address_picker.dart';
 import '../addresses/addresses_active.dart';
 import 'home_providers.dart';
 import 'home_widgets.dart';
+
+Duration _ms(int value) => Duration(milliseconds: value);
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -71,50 +74,75 @@ class _HomeContent extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const AmoleWordmark(fontSize: 30),
+          const Reveal(child: AmoleWordmark(fontSize: 30)),
           const SizedBox(height: AppSpacing.md),
-          _LocationPill(
-            label: address == null
-                ? 'Add a delivery address'
-                : '${address.label} · ${address.subCity}',
-            onTap: () => showAddressPicker(context),
+          Reveal(
+            delay: _ms(60),
+            child: _LocationPill(
+              label: address == null
+                  ? 'Add a delivery address'
+                  : '${address.label} · ${address.subCity}',
+              onTap: () => showAddressPicker(context),
+            ),
           ),
           const SizedBox(height: AppSpacing.lg),
-          Text('Selam! What are you craving?', style: textTheme.headlineSmall),
+          Reveal(
+            delay: _ms(120),
+            child: Text(
+              'Selam! What are you craving?',
+              style: textTheme.headlineSmall,
+            ),
+          ),
           const SizedBox(height: AppSpacing.lg),
-          _SearchField(onTap: () => context.go(AppRoutes.search)),
+          Reveal(
+            delay: _ms(180),
+            child: _SearchField(onTap: () => context.go(AppRoutes.search)),
+          ),
           const SizedBox(height: AppSpacing.xl),
-          SizedBox(
-            height: 48,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: data.categories.length,
-              separatorBuilder: (context, i) =>
-                  const SizedBox(width: AppSpacing.sm),
-              itemBuilder: (context, i) {
-                final c = data.categories[i];
-                final isSelected = c.id == selected;
-                return ChoiceChip(
-                  label: Text(c.label),
-                  selected: isSelected,
-                  showCheckmark: false,
-                  selectedColor: AppColors.forest,
-                  backgroundColor: AppColors.surface,
-                  side: const BorderSide(color: AppColors.outline),
-                  labelStyle: TextStyle(
-                    color: isSelected ? AppColors.cream : AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  onSelected: (_) =>
-                      ref.read(selectedCategoryProvider.notifier).select(c.id),
-                );
-              },
+          Reveal(
+            delay: _ms(240),
+            child: SizedBox(
+              height: 48,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: data.categories.length,
+                separatorBuilder: (context, i) =>
+                    const SizedBox(width: AppSpacing.sm),
+                itemBuilder: (context, i) {
+                  final c = data.categories[i];
+                  final isSelected = c.id == selected;
+                  return ChoiceChip(
+                    label: Text(c.label),
+                    selected: isSelected,
+                    showCheckmark: false,
+                    selectedColor: AppColors.forest,
+                    backgroundColor: AppColors.surface,
+                    side: const BorderSide(color: AppColors.outline),
+                    labelStyle: TextStyle(
+                      color: isSelected
+                          ? AppColors.cream
+                          : AppColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    onSelected: (_) => ref
+                        .read(selectedCategoryProvider.notifier)
+                        .select(c.id),
+                  );
+                },
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-          const PromoBanner(asset: SampleData.bannerAsset),
+          Reveal(
+            delay: _ms(320),
+            startScale: 0.96,
+            child: const PromoBanner(asset: SampleData.bannerAsset),
+          ),
           const SizedBox(height: AppSpacing.xl),
-          const SectionHeader(title: 'Popular dishes'),
+          Reveal(
+            delay: _ms(400),
+            child: const SectionHeader(title: 'Popular dishes'),
+          ),
           const SizedBox(height: AppSpacing.md),
           if (dishes.isEmpty)
             Container(
@@ -141,18 +169,28 @@ class _HomeContent extends ConsumerWidget {
                 itemCount: dishes.length,
                 separatorBuilder: (context, i) =>
                     const SizedBox(width: AppSpacing.md),
-                itemBuilder: (context, i) => Pressable(
-                  onTap: () => context.push(AppRoutes.dishPath(dishes[i].id)),
-                  child: DishCard(
-                    dish: dishes[i],
-                    restaurantName:
-                        restaurantNames[dishes[i].restaurantId] ?? '',
+                itemBuilder: (context, i) => Reveal(
+                  // Only the cards visible at first animate, so scrolling
+                  // never replays an entrance.
+                  enabled: i < 3,
+                  delay: _ms(440 + 80 * i),
+                  startScale: 0.97,
+                  child: Pressable(
+                    onTap: () => context.push(AppRoutes.dishPath(dishes[i].id)),
+                    child: DishCard(
+                      dish: dishes[i],
+                      restaurantName:
+                          restaurantNames[dishes[i].restaurantId] ?? '',
+                    ),
                   ),
                 ),
               ),
             ),
           const SizedBox(height: AppSpacing.xl),
-          const SectionHeader(title: 'Featured restaurants'),
+          Reveal(
+            delay: _ms(560),
+            child: const SectionHeader(title: 'Featured restaurants'),
+          ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             'Fictional restaurants. Photos will be added later.',
@@ -168,23 +206,31 @@ class _HomeContent extends ConsumerWidget {
               itemCount: data.restaurants.length,
               separatorBuilder: (context, i) =>
                   const SizedBox(width: AppSpacing.md),
-              itemBuilder: (context, i) => Pressable(
-                onTap: () => context.push(
-                  AppRoutes.restaurantPath(data.restaurants[i].id),
-                ),
-                child: RestaurantCard(
-                  restaurant: data.restaurants[i],
-                  index: i,
+              itemBuilder: (context, i) => Reveal(
+                enabled: i < 3,
+                delay: _ms(600 + 80 * i),
+                startScale: 0.97,
+                child: Pressable(
+                  onTap: () => context.push(
+                    AppRoutes.restaurantPath(data.restaurants[i].id),
+                  ),
+                  child: RestaurantCard(
+                    restaurant: data.restaurants[i],
+                    index: i,
+                  ),
                 ),
               ),
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-          Center(
-            child: TextButton.icon(
-              onPressed: () => context.push(AppRoutes.credits),
-              icon: const Icon(Icons.photo_library_outlined),
-              label: const Text('Photo credits'),
+          Reveal(
+            delay: _ms(760),
+            child: Center(
+              child: TextButton.icon(
+                onPressed: () => context.push(AppRoutes.credits),
+                icon: const Icon(Icons.photo_library_outlined),
+                label: const Text('Photo credits'),
+              ),
             ),
           ),
         ],
