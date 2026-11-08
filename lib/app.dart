@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'features/splash/splash_overlay.dart';
 
 class AmoleApp extends ConsumerWidget {
   const AmoleApp({super.key});
@@ -14,6 +15,8 @@ class AmoleApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       routerConfig: ref.watch(appRouterProvider),
+      builder: (context, child) =>
+          SplashOverlay(child: child ?? const SizedBox.shrink()),
     );
   }
 }
