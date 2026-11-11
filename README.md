@@ -1,76 +1,183 @@
 # Amole
 
-A food-delivery app for Ethiopia, built with Flutter. **This is a prototype.**
-No real restaurants, orders, payments or deliveries exist behind it.
+**Good food, delivered.**
 
-Tagline: Good food, delivered.
+Amole is an Ethiopian food-delivery mobile app prototype built with Flutter and Supabase. It explores how customers could discover restaurants, browse Ethiopian dishes, manage favorites, and prepare food orders through a modern mobile experience.
 
-## What is real
+> **Project status: Working prototype.** The application has a hosted backend and has been tested on a physical Android device. It is not a live food-delivery service. There are no operational restaurant partners, real order fulfillment, or payment processing.
 
-- Flutter app (Android tested on a Samsung Galaxy M15): home, search with
-  filters and sorting, restaurant pages, dish details, favorites, cart,
-  checkout, order history and cancellation rules.
-- Email and password accounts against a **local** Supabase (Docker), with
-  email verification.
-- The menu is read from the local database and falls back to built-in sample
-  data if the server cannot be reached.
-- Saved delivery addresses in your account, with an optional, confirmed copy
-  from the phone.
-- Cart, favorites and demo orders are kept separately for each account on the
-  phone.
-- Database: schema, row level security, server functions (order pricing,
-  idempotent ordering, cancellation requests, staff access) and 95 database
-  tests.
-- 235 Flutter tests. `flutter analyze` is clean.
+## Features
 
-## What is simulated or missing
+### Mobile application
 
-- **Orders are demo orders.** Checkout, tracking and the order timeline run on
-  the phone. Status changes happen only when you press a "Simulate" button.
-  The server-side ordering code and tests exist in the repository, but the
-  app screens do not use them yet.
-- **No payments.** Cash on delivery is the only option. Telebirr and CBE Birr
-  are listed but disabled.
-- **No restaurant or staff app, and no couriers.** Nothing acts on an order.
-- Restaurants, prices, ratings, delivery fees and delivery times are sample
-  data. Restaurant names are fictional.
-- No maps, GPS or live tracking.
-- No push notifications.
+- Restaurant discovery and browsing.
+- Food search with filtering and sorting.
+- Restaurant pages and dish details.
+- Favorites and shopping cart.
+- Checkout interface, demo order history, and cancellation interface.
+- Customer profiles and saved delivery addresses.
+- Offline fallback using sample menu data.
 
-## Known limits before any real release
+### Authentication and backend
 
-- The login session and saved data are stored unencrypted in
-  `shared_preferences`. Use secure storage first.
-- Finishing a password reset inside the app needs deep links, which are not
-  built.
-- Debug builds allow plain HTTP to `127.0.0.1`. Release builds do not, so a
-  release build needs a hosted backend.
-- The Supabase SQL is tested locally only. It has not been deployed or
-  reviewed by a security professional.
-- Contact details are not shown on server orders.
-- Dish photos are bundled files under Creative Commons licenses. See Photo
-  credits in the app, and `assets/images/ATTRIBUTIONS.md`.
+- Supabase email and password authentication.
+- Email verification.
+- Hosted PostgreSQL database.
+- Restaurant and dish catalog loaded from Supabase.
+- Customer address storage.
+- Row Level Security (RLS) policies and database functions.
+- Database migrations, seed data, and SQL tests.
 
-## Run it
+### Technologies
 
-1. Install Flutter, Docker Desktop and Node.
-2. Start the local backend:
-   `npx supabase start`
-   then `npx supabase db reset` to apply the migrations and seed data.
-3. Copy `env/local.example.json` to `env/local.json` and put the local
-   **publishable** key in it. Never put a secret key in the app or in Git.
-4. For a USB phone: `adb reverse tcp:54321 tcp:54321`.
-5. `flutter run --dart-define-from-file=env/local.json`
+- **Flutter & Dart** — mobile application
+- **Supabase** — authentication and backend
+- **PostgreSQL** — relational database
+- **Riverpod** — state management
+- **GoRouter** — navigation
+- **SharedPreferences** — local preferences
 
-Without the define file the app runs fully offline with sample data.
+## Prototype limitations
 
-## Tests
+Some interfaces and backend capabilities are not yet connected into a complete operational service.
 
-- `flutter analyze` and `flutter test`
-- `npx supabase test db`
+- Checkout and order tracking use demo orders stored on the device. The app does not yet use the server-side ordering workflow.
+- Order status changes are simulated.
+- Cash on delivery is presented as a demo option. Telebirr and CBE Birr are not integrated.
+- Restaurant names, menus, prices, ratings, delivery fees, and delivery times are sample data.
+- There are no restaurant staff applications, courier operations, or real deliveries.
+- No live GPS tracking or push notifications.
+- Password reset completion through deep links is not implemented.
 
-## Documents
+## Tested functionality
 
-- `docs/api/` draft API contracts
-- `docs/backend_options.md` backend comparison and decision
-- `supabase/README.md` database review notes
+The hosted prototype has been tested on a Samsung Galaxy M15:
+
+1. Account registration and profile access.
+2. Email verification.
+3. Sign-in and menu loading from the hosted backend.
+4. Saving a customer delivery address.
+5. Sign-out, subsequent sign-in, and offline menu fallback.
+
+## Getting started
+
+### Prerequisites
+
+- Flutter SDK
+- Dart SDK
+- Android Studio or an Android device
+- A Supabase project
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/wondie3/Amole.git
+cd Amole
+```
+
+### 2. Install dependencies
+
+```bash
+flutter pub get
+```
+
+### 3. Configure Supabase
+
+Create an `env` directory if it does not already exist.
+
+Create `env/hosted.json` with your own Supabase project URL and publishable key:
+
+```json
+{
+  "SUPABASE_URL": "YOUR_SUPABASE_PROJECT_URL",
+  "SUPABASE_ANON_KEY": "YOUR_SUPABASE_PUBLISHABLE_KEY"
+}
+```
+
+Use the exact environment variable names expected by the application. Check the Supabase initialization code if they differ.
+
+Get the URL and publishable key from your Supabase project settings.
+
+**Security:** Never commit `env/hosted.json`, a service-role key, database password, or signing credentials. The hosted configuration file is excluded by `.gitignore`.
+
+### 4. Run the application
+
+```bash
+flutter run --dart-define-from-file=env/hosted.json
+```
+
+The application also supports an offline sample-data fallback.
+
+## Database
+
+The `supabase/` directory contains:
+
+- `migrations/` — database schema and incremental changes.
+- `seed.sql` — sample restaurant and dish data.
+- `schema.sql` — schema reference.
+- `policies.sql` — Row Level Security policies.
+- `functions.sql` — database functions.
+- `tests/database/` — SQL database tests.
+
+The hosted project has been initialized with sample catalog data. For a fresh Supabase project, review the migrations and database configuration before applying them.
+
+## Tests and code quality
+
+Run Flutter tests:
+
+```bash
+flutter test
+```
+
+Run static analysis:
+
+```bash
+flutter analyze
+```
+
+Run Supabase database tests against a local development instance:
+
+```bash
+npx supabase test db
+```
+
+Do not run experimental database changes against a production project without reviewing them first.
+
+## Repository structure
+
+```text
+amole/
+├── android/
+├── assets/
+├── docs/
+├── env/
+├── lib/
+├── supabase/
+│   ├── migrations/
+│   ├── tests/
+│   ├── schema.sql
+│   ├── policies.sql
+│   ├── functions.sql
+│   └── seed.sql
+├── test/
+├── pubspec.yaml
+└── README.md
+```
+
+## Future improvements
+
+- Integrate the mobile checkout with the server-side ordering workflow.
+- Implement real payment-provider integrations.
+- Build restaurant and courier interfaces.
+- Add live order tracking and notifications.
+- Improve secure local session and data storage.
+- Complete password reset and deep-link support.
+- Conduct a full security review before real-world deployment.
+
+## Photo credits
+
+Food image credits and license information are maintained in `assets/images/ATTRIBUTIONS.md`.
+
+---
+
+**Built as a Computer Science project exploring mobile application development, backend integration, and digital food-delivery experiences in Ethiopia.**
