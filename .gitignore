@@ -54,3 +54,8 @@ env/local.json
 devtools_options.yaml
 
 env/hosted.json
+
+# Local build and temporary files
+/android/build/
+/assets_pending/
+/supabase/review_backup_*/
