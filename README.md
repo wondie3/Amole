@@ -28,6 +28,20 @@ Amole is an Ethiopian food-delivery mobile app prototype built with Flutter and 
 - Row Level Security (RLS) policies and database functions.
 - Database migrations, seed data, and SQL tests.
 
+## Screenshots
+
+|               Home               |            Restaurant Discovery            |
+| :------------------------------: | :----------------------------------------: |
+| ![Home](screenshots/01-home.jpg) | ![Discovery](screenshots/02-discovery.jpg) |
+
+|                    Restaurant Menu                     |                   Dish Details                   |
+| :----------------------------------------------------: | :----------------------------------------------: |
+| ![Restaurant Menu](screenshots/03-restaurant-menu.jpg) | ![Dish Details](screenshots/04-dish-details.jpg) |
+
+|                    Cart & Checkout                     |                     Profile & Orders                     |
+| :----------------------------------------------------: | :------------------------------------------------------: |
+| ![Cart and Checkout](screenshots/05-cart-checkout.jpg) | ![Profile and Orders](screenshots/06-profile-orders.jpg) |
+
 ### Technologies
 
 - **Flutter & Dart** — mobile application
