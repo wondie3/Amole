@@ -1,3 +1,4 @@
+import '../ai_assistant/ai_prompt_assistant.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -93,11 +94,61 @@ class _HomeContent extends ConsumerWidget {
               style: textTheme.headlineSmall,
             ),
           ),
-          const SizedBox(height: AppSpacing.lg),
+                   const SizedBox(height: AppSpacing.lg),
           Reveal(
             delay: _ms(180),
             child: _SearchField(onTap: () => context.go(AppRoutes.search)),
           ),
+          const SizedBox(height: AppSpacing.md),
+          Reveal(
+            delay: _ms(210),
+            child: Pressable(
+              onTap: () => AiPromptAssistantSheet.show(context),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.md,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.forest,
+                  borderRadius: BorderRadius.circular(AppRadii.md),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.auto_awesome, color: AppColors.cream),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Ask Amole AI',
+                            style: textTheme.titleSmall?.copyWith(
+                              color: AppColors.cream,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Describe your craving, budget, or fasting preference',
+                            style: textTheme.bodySmall?.copyWith(
+                              color: AppColors.cream.withValues(alpha: 0.85),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 16,
+                      color: AppColors.cream,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
           const SizedBox(height: AppSpacing.xl),
           Reveal(
             delay: _ms(240),
