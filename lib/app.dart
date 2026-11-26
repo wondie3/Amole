@@ -15,8 +15,19 @@ class AmoleApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       routerConfig: ref.watch(appRouterProvider),
-      builder: (context, child) =>
-          SplashOverlay(child: child ?? const SizedBox.shrink()),
+      builder: (context, child) {
+        final appWithSplash =
+            SplashOverlay(child: child ?? const SizedBox.shrink());
+        return ColoredBox(
+          color: const Color(0xFF14211A),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: ClipRect(child: appWithSplash),
+            ),
+          ),
+        );
+      },
     );
   }
 }
