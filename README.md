@@ -3,8 +3,17 @@
 **Good food, delivered.**
 
 Amole is an Ethiopian food-delivery mobile app prototype built with Flutter and Supabase. It explores how customers could discover restaurants, browse Ethiopian dishes, manage favorites, and prepare food orders through a modern mobile experience.
+## PromptWars – AI Prompt Challenge Integration
+
+**Live Web Demo:** https://github.io
+
+Amole integrates an interactive **AI Meal & Craving Prompt Assistant (`lib/features/ai_assistant/ai_prompt_assistant.dart`)** designed for natural-language culinary discovery in Ethiopia:
+- **Natural-Language Prompt Parsing:** Users enter free-form prompts describing cravings, budget constraints (in ETB), spice tolerance, preparation speed, or Ethiopian fasting (*Tsom*) requirements.
+- **Structured Intent & Reasoning Engine:** Translates unstructured user prompts into structured dietary/intent tags, personalized dish & restaurant recommendations, transparent AI reasoning, and traditional Ethiopian drink pairings (*Buna*, *Tej*, *Spris*).
+- **One-Tap Sample Prompts:** Built-in prompt chips allow instant testing of diverse prompt strategies and edge cases.
 
 > **Project status: Working prototype.** The application has a hosted backend and has been tested on a physical Android device. It is not a live food-delivery service. There are no operational restaurant partners, real order fulfillment, or payment processing.
+
 
 ## Features
 
